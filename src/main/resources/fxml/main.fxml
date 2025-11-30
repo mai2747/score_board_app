@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.MainController" >
+   <children>
+      <Button fx:id="startButton" layoutX="262.0" layoutY="224.0" mnemonicParsing="false" text="Start Game" onAction="#handleStartButton" />
+      <Label layoutX="174.0" layoutY="139.0" text="Score Calculator">
+         <font>
+            <Font name="Arial" size="34.0" />
+         </font>
+      </Label>
+   </children>
+</Pane>
