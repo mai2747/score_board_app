@@ -4,13 +4,17 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.MainController" >
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.MainController">
    <children>
-      <Button fx:id="startButton" layoutX="262.0" layoutY="224.0" mnemonicParsing="false" text="Start Game" onAction="#handleStartButton" />
-      <Label layoutX="174.0" layoutY="139.0" text="Score Calculator">
+      <Button fx:id="startButton" layoutX="262.0" layoutY="271.0" mnemonicParsing="false" onAction="#handleStartButton" text="Start Game" />
+      <Label layoutX="174.0" layoutY="96.0" text="Score Calculator">
          <font>
             <Font name="Arial" size="34.0" />
          </font>
       </Label>
+      <TextField fx:id="firstPlayerName" layoutX="100.0" layoutY="212.0" text="Player 1" />
+      <TextField fx:id="secondPlayerName" layoutX="351.0" layoutY="212.0" text="Player 2" />
+      <Label layoutX="100.0" layoutY="183.0" text="Player 1" />
+      <Label layoutX="351.0" layoutY="183.0" text="Player 2" />
    </children>
 </Pane>
