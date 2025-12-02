@@ -12,4 +12,12 @@ public class PlayerInGame {
         this.playerId = playerId;
         this.turnOrder = turnOrder;
     }
+
+    public Long getPlayerId() {
+        return playerId;
+    }
+
+    public int getTurnOrder(){
+        return turnOrder;
+    }
 }
