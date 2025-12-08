@@ -13,6 +13,7 @@ public class GameService {
     private List<PlayerInGame> playersInGame;
     private List<PlayerInGame> playersInTurnOrder;
     private Game currentGame;
+    private Long currentGameID;
     private Group currentGroup;
     private PlayerInGame currentPlayer;
     public GroupService groupService;
@@ -20,6 +21,10 @@ public class GameService {
 
     public int currentTurnIndex = 1;
     private int playerNum;
+
+    public GameService(ScoreService scoreService){
+        this.scoreService = scoreService;
+    }
 
     public void createNewGroup(List<String> names) {
         groupService = new GroupService();
@@ -41,23 +46,27 @@ public class GameService {
         }
 
         // Get player list in a playing order
-        playersInTurnOrder = orderedPlayers();
+        playersInTurnOrder = getOrderedPlayers();
         playerNum = playersInGame.size();
+        currentPlayer = playersInTurnOrder.get(0);
+
+        // Set gameID to the field
+        currentGameID = getCurrentGame().getId();
 
         // GameRepository / GamePlayerRepository に保存するのは後で
         // currentGame = gameRepository.save(currentGame)
         // gamePlayerRepository.batchInsert(playersInGame)
     }
 
-    private List<PlayerInGame> orderedPlayers(){
+    private List<PlayerInGame> getOrderedPlayers(){
         return playersInGame.stream().sorted(Comparator.comparingInt(PlayerInGame::getTurnOrder)).toList();
     }
 
     public void submitScore(Long playerId, int score){
-        scoreService = new ScoreService();  // Should be initialised in a field??
+        scoreService.addScore(currentGameID, playerId, currentTurnIndex, score);
 
-        scoreService.addScore(playerId, score);
-        currentTurnIndex++;
+        // Set for the next turn ... should be separated to another method??
+        advanceTurn();
         currentPlayer = playersInTurnOrder.get(currentTurnIndex % playerNum);
     }
 
@@ -70,6 +79,10 @@ public class GameService {
     }
 
     public PlayerInGame getCurrentPlayer() {
-        return currentPlayer;
+        return playersInTurnOrder.get(currentTurnIndex % playerNum);
+    }
+
+    public void advanceTurn() {
+        currentTurnIndex++;
     }
 }

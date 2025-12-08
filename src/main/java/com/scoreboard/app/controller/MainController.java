@@ -1,5 +1,8 @@
 package com.scoreboard.app.controller;
 
+import com.scoreboard.app.repository.InMemoryScoreRepository;
+import com.scoreboard.app.repository.ScoreRepository;
+import com.scoreboard.app.service.ScoreService;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -29,11 +32,15 @@ public class MainController {
         // if (!fourthPlayerName.getText().isBlank()) playerNames.add(fourthPlayerName.getText());
 
         // Pass information to GameService
-        GameService gameService = new GameService();
+        ScoreRepository repo = new InMemoryScoreRepository(); // demo
+        ScoreService scoreService = new ScoreService(repo);
+        GameService gameService = new GameService(scoreService);
         gameService.createNewGroup(playerNames);
 
         ScoreInputController controller =
                 (ScoreInputController) ViewManager.switchTo("scoreInput.fxml");
+        controller.setGameService(gameService);
+        controller.onSceneReady();
         // ?or ViewManager.switchTo("scoreInput.fxml");
     }
 }
