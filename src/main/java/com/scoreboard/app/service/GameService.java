@@ -22,32 +22,20 @@ public class GameService {
     public int currentTurnIndex = 1;
     private int playerNum;
 
-    public GameService(ScoreService scoreService){
+    public GameService(ScoreService scoreService, GroupService groupService){
         this.scoreService = scoreService;
+        this.groupService = groupService;
     }
 
     public void createNewGroup(List<String> names) {
-        groupService = new GroupService();
+        playerNum = names.size();
         currentGroup = groupService.createGroup(names);
 
-        // ** Using dummy information **
-        // Create Game object
-        currentGame = new Game();
-        currentGame.setGroupId(currentGroup.getId());
-        currentGame.setId(0L);
-
         // Create playerInGame, containing the play order in this game
-        playersInGame = new ArrayList<>();
-
-        int order = 1;
-        for (Long playerId : currentGroup.getPlayerIds()) {  // ← group内のプレイヤーID一覧
-            PlayerInGame pig = new PlayerInGame(0l, playerId, order++);
-            playersInGame.add(pig);
-        }
+        playersInGame = groupService.makePlayerList(currentGroup);
 
         // Get player list in a playing order
-        playersInTurnOrder = getOrderedPlayers();
-        playerNum = playersInGame.size();
+        playersInTurnOrder = groupService.getOrderedPlayers(playersInGame);
         currentPlayer = playersInTurnOrder.get(0);
 
         // Set gameID to the field
@@ -58,8 +46,13 @@ public class GameService {
         // gamePlayerRepository.batchInsert(playersInGame)
     }
 
-    private List<PlayerInGame> getOrderedPlayers(){
-        return playersInGame.stream().sorted(Comparator.comparingInt(PlayerInGame::getTurnOrder)).toList();
+    // Separated from the method above, but does not have proper meaning of use yet
+    public void createNewGame(){
+        // ** Using dummy information **
+        // Create Game object  * ok to be "new" in this class?
+        currentGame = new Game();
+        currentGame.setGroupId(currentGroup.getId());
+        currentGame.setId(0L);
     }
 
     public void submitScore(Long playerId, int score){
@@ -79,7 +72,7 @@ public class GameService {
     }
 
     public PlayerInGame getCurrentPlayer() {
-        return playersInTurnOrder.get(currentTurnIndex % playerNum);
+        return currentPlayer;
     }
 
     public void advanceTurn() {

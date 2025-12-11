@@ -2,6 +2,7 @@ package com.scoreboard.app.controller;
 
 import com.scoreboard.app.repository.InMemoryScoreRepository;
 import com.scoreboard.app.repository.ScoreRepository;
+import com.scoreboard.app.service.GroupService;
 import com.scoreboard.app.service.ScoreService;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
@@ -34,8 +35,11 @@ public class MainController {
         // Pass information to GameService
         ScoreRepository repo = new InMemoryScoreRepository(); // demo
         ScoreService scoreService = new ScoreService(repo);
-        GameService gameService = new GameService(scoreService);
+        GroupService groupService = new GroupService();
+        GameService gameService = new GameService(scoreService, groupService);
         gameService.createNewGroup(playerNames);
+
+        gameService.createNewGame();  // Not in use yet, Game Object does not have any use yet
 
         ScoreInputController controller =
                 (ScoreInputController) ViewManager.switchTo("scoreInput.fxml");

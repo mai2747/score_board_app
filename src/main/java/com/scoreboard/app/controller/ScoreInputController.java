@@ -20,14 +20,17 @@ public class ScoreInputController {
         updatePlayerDisplay();
     }
 
+
+    // TODO: Replace current player from PlayerInGame object to DTO
     private void updatePlayerDisplay(){
         PlayerInGame pig = gameService.getCurrentPlayer();
         // Player player = gameService.getPlayerById(pig.getPlayerId()); // or pig.getPlayerName
-        // playerNameLabel.setText(player.getName());
+        // playerNameLabel.setText(pig.getName());
     }
 
     @FXML private void submitScore(ActionEvent event){
         // Error handling: Score is null/negative/non-digit
+        // Still having issue on showing player name on label (08 Dec 2025)
 
         int points = Integer.parseInt(scoreField.getText());
         PlayerInGame currentPlayer = gameService.getCurrentPlayer();
