@@ -15,7 +15,6 @@ GameService:
    → Create 2-player group (Player1, Player2)
 2. Create Game object
 3. ((GameRepository.save(game))) *skip DB for this phase
-4. Finish first setting of a group and a game
 |
 MainController: Transition interface to ScoreInput
 |
@@ -23,32 +22,36 @@ MainController: Transition interface to ScoreInput
                 [Score Input Interface]
 ===================================================
 
-*** Need more updates below (01 Dec 2025) ***
 
+ScoreInputController: Display first player's name
+|
 User inputs score and clicks Submit button
 |
-ScoreInputController → GameService.processTurn(score)
+ScoreInputController → GameService.submitScore(score)
 |
 GameService:
-1. ScoreService.recordScore(score)
-   → Create Score object & save to DB
-2. TurnOrderUtil.nextTurn()
+1. ScoreService.addScore(score&otherIDs)
+   → Create Score object with the info & save to List //will be replaced to DB
+2. advanceTurn()
    → Switch to next player
 3. Update game state
-   → increment turn number, update currentPlayer
-4. Check end-of-game condition (optional for later)
-5. Return nextPlayer (or gameFinished flag) to ScoreInputController
+   → Increment turn number, update currentPlayer
 |
 ScoreInputController:
-- If gameFinished = false → update UI for next player
-- If gameFinished = true  → transition to result screen
+1. updatePlayerDisplay()
+   → Change Label to display the next player
+2. scoreField.clear()
 |
 *Repeat until the game ends or user clicks Finish Game*
 |
 User clicks "Finish Game" button
 |
-GameController:
+GameController → GameService.finishGame()
+|
+GameService:
 1. ScoreService.getTotalScores()
 2. RankingService.generateRanking()
 3. Pass results to ranking interface and transition to ranking screen
+
+...to be updated
 ```
