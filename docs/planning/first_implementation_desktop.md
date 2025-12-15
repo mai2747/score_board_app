@@ -19,6 +19,7 @@ Implement a minimum playable desktop application that allows two players to reco
 - **R2**: Automatic total calculation
 - **R4**: Ranking display (basic, based on total scores only)
 - **R8**: Temporary group
+- **R25**: Automatic game termination
 
 ### Out of Scope
 - Score editing
@@ -50,6 +51,7 @@ Extend the desktop application to support score correction, live-updated gamepla
 - **R10**: Live-updated score and ranking display
 - **R11**: Game settings
 - **R15**: Pause and resume game
+- **R24**: Word-based score calculation
 
 ### Out of Scope
 - Database persistence
@@ -72,13 +74,13 @@ Replace the in-memory repositories with a SQLite database to enable persistent d
 - Comparison of historical performance between players
 
 ### Mapped Requirements
-- **R6**: Score history table (past games)
+- **R6**: Score history table
 - **R12**: Score and ranking history visualization
 - **R13**: Score history comparison between players
-- **R14**: Management of past records (deletion)
+- **R14**: Management of past records (mainly deletion)
 
 ### Out of Scope
-- Could and Won’t requirements; R16–R25 (*)
+- Could and Won’t requirements; R16–R23 (*)
 
 ### Deliverable
 A desktop application with persistent data storage, allowing users to review, analyze, and manage score histories across multiple games.
