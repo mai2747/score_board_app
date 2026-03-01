@@ -25,6 +25,8 @@ public class ScoreInputController implements ContextAwareController{
     @Override
     public void setContext(AppContext context){
         this.gameService = context.gameService();
+
+        updatePlayerDisplay();
     }
 
     public void onSceneReady(){
@@ -35,7 +37,6 @@ public class ScoreInputController implements ContextAwareController{
     private void initialize() {
         // バリデーションはserviceに任せるべき？
         var empty = scoreField.textProperty().isEmpty();
-
         submitButton.disableProperty().bind(empty);
 
         var tip = new javafx.scene.control.Tooltip("Please input your score");
@@ -47,13 +48,12 @@ public class ScoreInputController implements ContextAwareController{
 
     // TODO: Replace current player from PlayerInGame object to DTO
     private void updatePlayerDisplay(){
-        PlayerInGame pig = gameService.getCurrentPlayer();
-        // Player player = gameService.getPlayerById(pig.getPlayerId()); // or pig.getPlayerName
-        // playerNameLabel.setText(pig.getName());
+        String name = gameService.getCurrentPlayerName();
+        System.out.println("|| Displayed current player: " + name + " ||");
+        playerNameLabel.setText(name);
     }
 
     @FXML private void submitScore(ActionEvent event){
-        // Still having issue on showing player name on label (08 Dec 2025)
         String scoreInField = scoreField.getText();
 
         errorLabel.setText("");
@@ -73,6 +73,7 @@ public class ScoreInputController implements ContextAwareController{
     }
 
     @FXML private void endGame(){
+
         // Tell GameService and transition into the result scene (skipping penalty scene for now)
         ViewManager.switchTo("result.fxml");
     }

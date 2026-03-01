@@ -2,21 +2,24 @@ package com.scoreboard.app.service;
 
 
 import com.scoreboard.app.Exception.ValidationException;
+import com.scoreboard.app.dto.PlayerDTO;
 import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.PlayerInGame;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class GameService {
-    private List<PlayerInGame> playersInGame;
-    private List<PlayerInGame> playersInTurnOrder;
+    private List<PlayerInGame> playersInGame;      // Player list containing turn order
+    private List<PlayerInGame> playersInTurnOrder; // Ordered player list
+    private List<PlayerDTO> playerDTO;             // いらないかもPlayerDTO, containing playerID, name, turn order
+    private Map<Long, String> nameByPlayerID;
+
     private Game currentGame;
     private Long currentGameID;
     private Group currentGroup;
     private PlayerInGame currentPlayer;
+
     public GroupService groupService;
     public ScoreService scoreService;
 
@@ -28,7 +31,15 @@ public class GameService {
         this.groupService = groupService;
     }
 
+    public void startGameWithNewGroup(List<String> names){
+        createNewGroup(names); // Game Object does not have any use yet
+        createNewGame();
+        // Set gameID to the field
+        currentGameID = getCurrentGame().getId();
+    }
+
     public void createNewGroup(List<String> names) {
+        // Order of player names correspond to the play order
         playerNum = names.size();
         currentGroup = groupService.createGroup(names);
 
@@ -39,8 +50,10 @@ public class GameService {
         playersInTurnOrder = groupService.getOrderedPlayers(playersInGame);
         currentPlayer = playersInTurnOrder.get(0);
 
-        // Set gameID to the field
-        currentGameID = getCurrentGame().getId();
+        // Create nameByID list.
+        // Treated as a cache when the system want to get player names from playerID.
+        nameByPlayerID = makeNameList(names);
+
 
         // GameRepository / GamePlayerRepository に保存するのは後で
         // currentGame = gameRepository.save(currentGame)
@@ -56,14 +69,28 @@ public class GameService {
         currentGame.setId(0L);
     }
 
+    private Map<Long, String> makeNameList(List<String> names) {
+        Map<Long, String> nameByID = new HashMap<>();
+        int len = names.size();
+
+        // Since names is supposed to be obtained in the order the same as turn order,
+        // playerID is assumed to correspond to the name order.
+        // ** If this is considered to be vulnerable to the system, should be modified
+        for(int i = 0; i < len; i++) {
+            nameByID.put(playersInTurnOrder.get(i).getPlayerId(), names.get(i));
+        }
+        return nameByID;
+    }
+
     public void submitScore(String scoreInField) throws ValidationException {
         Long playerID = currentPlayer.getPlayerId();
         int score = parseAndValidate(scoreInField);
+        System.out.println("Score submitted: " + score);
+
         scoreService.addScore(currentGameID, playerID, currentTurnIndex, score);
 
         // Set for the next turn ... should be separated to another method??
         advanceTurn();
-        currentPlayer = playersInTurnOrder.get(currentTurnIndex % playerNum);
     }
 
     // Error handling: Score is null/negative/non-digit
@@ -94,6 +121,13 @@ public class GameService {
         return value;
     }
 
+    public void advanceTurn() {
+        currentPlayer = playersInTurnOrder.get(currentTurnIndex % playerNum);
+        System.out.println("Next player is " + nameByPlayerID.get(currentPlayer.getPlayerId()));
+        currentTurnIndex++;
+        System.out.println();
+    }
+
     public Game getCurrentGame() {
         return currentGame;
     }
@@ -106,7 +140,12 @@ public class GameService {
         return currentPlayer;
     }
 
-    public void advanceTurn() {
-        currentTurnIndex++;
+    public String getCurrentPlayerName(){
+        Long id = currentPlayer.getPlayerId();
+        return nameByPlayerID.getOrDefault(id, "");
+    }
+
+    public void reorder(){
+        // For the additional function: Reorder & Start new game
     }
 }

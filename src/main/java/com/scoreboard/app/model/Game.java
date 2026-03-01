@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public class Game {
-    private Long id;
+    private Long gameID;
     private Long groupId;
     private LocalDateTime startedAt;
     private List<Score> scores;
@@ -16,10 +16,10 @@ public class Game {
     }
 
     public void setId(Long id) {
-        this.id = id;
+        this.gameID = id;
     }
 
     public Long getId() {
-        return id;
+        return gameID;
     }
 }

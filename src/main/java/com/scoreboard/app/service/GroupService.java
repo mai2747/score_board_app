@@ -8,11 +8,12 @@ import com.scoreboard.app.model.PlayerInGame;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GroupService {
 
     public Group createGroup(List<String> names){
-
+        System.out.println("|| Creating new group ||");
         //dummies
         Group newGroup = new Group();
         newGroup.setId();  // setting random id;
@@ -22,7 +23,7 @@ public class GroupService {
 
         int playerNum = names.size();
         for(int i = 0; i < playerNum; i++){
-            Long dummyPlayerID = 123l;
+            Long dummyPlayerID = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
             Long dummyGroupID = 123l;
             String playerName = names.get(i);
             Player player = new Player(dummyPlayerID, dummyGroupID, playerName);

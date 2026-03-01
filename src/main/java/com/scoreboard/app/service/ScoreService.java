@@ -3,6 +3,8 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.repository.ScoreRepository;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 public class ScoreService {
     private final ScoreRepository scoreRepository;
 
@@ -26,7 +28,7 @@ public class ScoreService {
     }
 
     private Long generateDummyID(){
-        return 00l;
+        return ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
     }
 }
 

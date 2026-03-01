@@ -13,6 +13,7 @@ public class InMemoryScoreRepository implements ScoreRepository{
     @Override
     public void save(Score score) {
         scores.add(score);
+        System.out.println("Score's saved to the Memory");
     }
 
     @Override

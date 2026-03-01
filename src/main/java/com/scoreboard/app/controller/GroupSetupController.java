@@ -40,10 +40,11 @@ public class GroupSetupController implements ContextAwareController{
         // if (!thirdPlayerName.getText().isBlank())  playerNames.add(thirdPlayerName.getText());
         // if (!fourthPlayerName.getText().isBlank()) playerNames.add(fourthPlayerName.getText());
 
-        // Pass information to GameService
-        gameService.createNewGroup(playerNames);
+        System.out.println("First Player..." + firstPlayerName.getText());
+        System.out.println("Second Player.." + secondPlayerName.getText());
+        System.out.println();
 
-        gameService.createNewGame();  // Not in use yet, Game Object does not have any use yet
+        gameService.startGameWithNewGroup(playerNames);
 
         ViewManager.switchTo("scoreInput.fxml");
     }

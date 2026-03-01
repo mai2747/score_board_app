@@ -1,5 +1,9 @@
 package com.scoreboard.app.model;
 
+// This entity includes turn order for each game.
+// This will also be used to record in DB for game history with order, such as table recording.
+// During a game, the system mostly refer players with this entity.
+
 public class PlayerInGame {
     private Long gameId;
     private Long playerId;
