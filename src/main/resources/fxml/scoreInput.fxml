@@ -5,10 +5,10 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.ScoreInputController">
    <children>
-      <Button layoutX="274.0" layoutY="246.0" mnemonicParsing="false" onAction="#submitScore" text="Submit" />
+      <Button fx:id="submitButton" layoutX="274.0" layoutY="254.0" mnemonicParsing="false" onAction="#submitScore" text="Submit" />
       <TextField fx:id="scoreInputField" layoutX="226.0" layoutY="200.0" promptText="Input your score" />
       <Label fx:id="playerNameLabel" layoutX="287.0" layoutY="145.0" />
-      <Label fx:id="currentPlayer" layoutX="287.0" layoutY="162.0" />
       <Button layoutX="510.0" layoutY="339.0" mnemonicParsing="false" onAction="#endGame" text="End Game" />
+      <Label fx:id="errorLabel" layoutX="286.0" layoutY="229.0" textFill="#e25858" />
    </children>
 </AnchorPane>

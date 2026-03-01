@@ -1,6 +1,7 @@
 package com.scoreboard.app.service;
 
 
+import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.PlayerInGame;
@@ -55,12 +56,42 @@ public class GameService {
         currentGame.setId(0L);
     }
 
-    public void submitScore(Long playerId, int score){
-        scoreService.addScore(currentGameID, playerId, currentTurnIndex, score);
+    public void submitScore(String scoreInField) throws ValidationException {
+        Long playerID = currentPlayer.getPlayerId();
+        int score = parseAndValidate(scoreInField);
+        scoreService.addScore(currentGameID, playerID, currentTurnIndex, score);
 
         // Set for the next turn ... should be separated to another method??
         advanceTurn();
         currentPlayer = playersInTurnOrder.get(currentTurnIndex % playerNum);
+    }
+
+    // Error handling: Score is null/negative/non-digit
+    private int parseAndValidate(String input) throws ValidationException{
+        if (input == null) {
+            throw new ValidationException("Score is required.");
+        }
+
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            throw new ValidationException("Score is required.");
+        }
+
+        if (trimmed.contains(" ")) {
+            throw new ValidationException("Spaces are not allowed.");
+        }
+        String normalised = trimmed;
+
+        if(!normalised.matches("\\d+")){
+            throw new ValidationException("Score must be integer");
+        }
+
+        int value = Integer.parseInt(normalised);
+        if (value < 0) {
+            throw new ValidationException("Score must be 0 or greater.");
+        }
+
+        return value;
     }
 
     public Game getCurrentGame() {

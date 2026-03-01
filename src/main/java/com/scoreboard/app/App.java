@@ -8,9 +8,13 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) {
+        // Instantiate controller and repo
+        AppContext context = new AppContext();
+
         // Pass main stage to ViewManager
         ViewManager.setStage(stage);
-        ViewManager.switchTo("main.fxml");
+        ViewManager.setContext(context);
+        ViewManager.switchTo("GroupSetup.fxml");
 
         stage.setTitle("Scrabble Score Calculator");
         stage.show();

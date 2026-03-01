@@ -1,5 +1,7 @@
 package com.scoreboard.app.view;
 
+import com.scoreboard.app.AppContext;
+import com.scoreboard.app.controller.ContextAwareController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -10,10 +12,12 @@ import java.io.IOException;
 public class ViewManager {
 
     private static Stage mainStage;
+    private static AppContext context;
 
-    public static void setStage(Stage stage) {
-        mainStage = stage;
-    }
+    private ViewManager() {}
+
+    public static void setStage(Stage stage) { mainStage = stage;}
+    public static void setContext(AppContext c) { context = c; }
 
 //    public static void switchTo(String fxmlName) {
 //
@@ -35,11 +39,17 @@ public class ViewManager {
             );
             Parent root = loader.load();
 
+            Object controller = loader.getController();
+
+            if(controller instanceof ContextAwareController aware){
+                aware.setContext(context);
+            }
+
             Scene scene = new Scene(root);
             mainStage.setScene(scene);
             mainStage.show();
 
-            return loader.getController();
+            return controller;
         } catch (IOException e) {
             e.printStackTrace();
             return null;

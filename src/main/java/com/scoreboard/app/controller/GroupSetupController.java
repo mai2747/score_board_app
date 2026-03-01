@@ -1,5 +1,6 @@
 package com.scoreboard.app.controller;
 
+import com.scoreboard.app.AppContext;
 import com.scoreboard.app.repository.InMemoryScoreRepository;
 import com.scoreboard.app.repository.ScoreRepository;
 import com.scoreboard.app.service.GroupService;
@@ -14,11 +15,18 @@ import javafx.scene.control.TextField;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainController {
+public class GroupSetupController implements ContextAwareController{
 
     @FXML private Button startButton;
     @FXML private TextField firstPlayerName;
     @FXML private TextField secondPlayerName;
+
+    private GameService gameService;
+
+    @Override
+    public void setContext(AppContext context){
+        this.gameService = context.gameService();
+    }
 
     // Further implementation: "Create Group" -> Edit settings -> "Start Game"
     // This method respond to "Create Group"
@@ -33,18 +41,10 @@ public class MainController {
         // if (!fourthPlayerName.getText().isBlank()) playerNames.add(fourthPlayerName.getText());
 
         // Pass information to GameService
-        ScoreRepository repo = new InMemoryScoreRepository(); // demo
-        ScoreService scoreService = new ScoreService(repo);
-        GroupService groupService = new GroupService();
-        GameService gameService = new GameService(scoreService, groupService);
         gameService.createNewGroup(playerNames);
 
         gameService.createNewGame();  // Not in use yet, Game Object does not have any use yet
 
-        ScoreInputController controller =
-                (ScoreInputController) ViewManager.switchTo("scoreInput.fxml");
-        controller.setGameService(gameService);
-        controller.onSceneReady();
-        // ?or ViewManager.switchTo("scoreInput.fxml");
+        ViewManager.switchTo("scoreInput.fxml");
     }
 }
