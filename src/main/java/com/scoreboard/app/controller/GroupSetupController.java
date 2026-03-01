@@ -46,6 +46,6 @@ public class GroupSetupController implements ContextAwareController{
 
         gameService.startGameWithNewGroup(playerNames);
 
-        ViewManager.switchTo("scoreInput.fxml");
+        ViewManager.switchTo("ScoreInput.fxml");
     }
 }

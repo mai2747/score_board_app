@@ -3,6 +3,7 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.repository.ScoreRepository;
 
+import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ScoreService {
@@ -19,12 +20,15 @@ public class ScoreService {
         // For dummy ID
         Long dummyID = generateDummyID();
 
-        // While creating Score object, since scoreID will be generated on the way to be saved to DB,
-        // scoreID might be omitted from Score object in the actual installation
+        // scoreID can be omitted from Score object in the actual installation when switching to DB
         // But still need to think about the chance of editing past score
         Score score = new Score(dummyID, gameId, playerId, turnNumber, point);
 
         scoreRepository.save(score);
+    }
+
+    public List<Score> getScores(){
+        return scoreRepository.getScores();
     }
 
     private Long generateDummyID(){

@@ -3,9 +3,11 @@ package com.scoreboard.app.service;
 
 import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.dto.PlayerDTO;
+import com.scoreboard.app.dto.RankingDTO;
 import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.PlayerInGame;
+import com.scoreboard.app.model.Score;
 
 import java.util.*;
 
@@ -22,6 +24,7 @@ public class GameService {
 
     public GroupService groupService;
     public ScoreService scoreService;
+    public RankingService rankingService;
 
     public int currentTurnIndex = 1;
     private int playerNum;
@@ -29,6 +32,7 @@ public class GameService {
     public GameService(ScoreService scoreService, GroupService groupService){
         this.scoreService = scoreService;
         this.groupService = groupService;
+        rankingService = new RankingService();
     }
 
     public void startGameWithNewGroup(List<String> names){
@@ -50,10 +54,8 @@ public class GameService {
         playersInTurnOrder = groupService.getOrderedPlayers(playersInGame);
         currentPlayer = playersInTurnOrder.get(0);
 
-        // Create nameByID list.
-        // Treated as a cache when the system want to get player names from playerID.
+        // Create nameByID list. Treated as a cache when the system want to get player names from playerID.
         nameByPlayerID = makeNameList(names);
-
 
         // GameRepository / GamePlayerRepository に保存するのは後で
         // currentGame = gameRepository.save(currentGame)
@@ -84,14 +86,17 @@ public class GameService {
 
     public void submitScore(String scoreInField) throws ValidationException {
         Long playerID = currentPlayer.getPlayerId();
-        int score = parseAndValidate(scoreInField);
-        System.out.println("Score submitted: " + score);
+        int input = parseAndValidate(scoreInField);
+        System.out.println("Score submitted: " + input);
 
-        scoreService.addScore(currentGameID, playerID, currentTurnIndex, score);
+        scoreService.addScore(currentGameID, playerID, currentTurnIndex, input);
+        //RankingService
+        List<Score> scores = scoreService.getScores();
+        RankingDTO rankingDTO = rankingService.buildRanking(gameId, scores, nameByPlayerId);
 
-        // Set for the next turn ... should be separated to another method??
         advanceTurn();
     }
+
 
     // Error handling: Score is null/negative/non-digit
     private int parseAndValidate(String input) throws ValidationException{

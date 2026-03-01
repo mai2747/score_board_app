@@ -24,6 +24,7 @@ public class InMemoryScoreRepository implements ScoreRepository{
     }
 
     // Get scores to make ranking
+    @Override
     public List<Score> getScores(){
         return scores;
     }

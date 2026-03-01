@@ -9,5 +9,6 @@ import java.util.List;
 public interface ScoreRepository {
 
     void save(Score score);               // INSERT
+    List<Score> getScores();
     List<Score> findByGameId(Long gameId); // For getting scores of a game (not used in demo)
 }

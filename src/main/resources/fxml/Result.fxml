@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.ResultController">
+   <children>
+      <Label fx:id="endingPhrase" layoutX="286.0" layoutY="183.0" />
+      <Button layoutX="255.0" layoutY="328.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
+      <Label layoutX="255.0" layoutY="60.0" text="Ranking">
+         <font>
+            <Font size="25.0" />
+         </font>
+      </Label>
+      <Label fx:id="firstRank" layoutX="193.0" layoutY="141.0" prefHeight="25.0" prefWidth="75.0" text="Label">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="secondRank" layoutX="193.0" layoutY="190.0" prefHeight="25.0" prefWidth="75.0" text="Label" />
+      <Label fx:id="thirdRank" layoutX="193.0" layoutY="231.0" prefHeight="17.0" prefWidth="75.0" text="Label" />
+      <Label fx:id="fourthRank" layoutX="193.0" layoutY="272.0" prefHeight="17.0" prefWidth="75.0" text="Label" />
+      <Label layoutX="193.0" layoutY="112.0" text="Rank" textFill="#757575" />
+      <Label layoutX="371.0" layoutY="112.0" text="Score" textFill="#7e7e7e" />
+      <Label fx:id="firstScore" layoutX="365.0" layoutY="141.0" text="Label">
+         <font>
+            <Font size="18.0" />
+         </font>
+      </Label>
+      <Label fx:id="secondScore" layoutX="372.0" layoutY="194.0" text="Label" />
+      <Label fx:id="thirdScore" layoutX="372.0" layoutY="231.0" text="Label" />
+      <Label fx:id="fourthScore" layoutX="372.0" layoutY="272.0" text="Label" />
+   </children>
+</AnchorPane>

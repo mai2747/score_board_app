@@ -45,8 +45,6 @@ public class ScoreInputController implements ContextAwareController{
         );
     }
 
-
-    // TODO: Replace current player from PlayerInGame object to DTO
     private void updatePlayerDisplay(){
         String name = gameService.getCurrentPlayerName();
         System.out.println("|| Displayed current player: " + name + " ||");
@@ -72,10 +70,13 @@ public class ScoreInputController implements ContextAwareController{
         scoreField.clear();
     }
 
-    @FXML private void endGame(){
-
-        // Tell GameService and transition into the result scene (skipping penalty scene for now)
-        ViewManager.switchTo("result.fxml");
+    @FXML private void endGame() throws ValidationException {
+        if (!scoreField.getText().isBlank()){
+            throw new ValidationException("Please submit your score");
+        }else {
+            // Tell GameService and transition into the result scene (skipping penalty scene for now)
+            ViewManager.switchTo("Result.fxml");
+        }
     }
 
 
