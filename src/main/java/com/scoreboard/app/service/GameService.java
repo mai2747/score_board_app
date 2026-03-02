@@ -8,7 +8,9 @@ import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.model.Score;
+import com.scoreboard.app.view.ViewManager;
 
+import javax.swing.text.View;
 import java.util.*;
 
 public class GameService {
@@ -29,6 +31,7 @@ public class GameService {
 
     public int currentTurnIndex = 1;
     private int playerNum;
+    private int consecutiveZeroCount = 0;
 
     public GameService(ScoreService scoreService, GroupService groupService){
         this.scoreService = scoreService;
@@ -90,14 +93,37 @@ public class GameService {
         int input = parseAndValidate(scoreInField);
         System.out.println("Score submitted: " + input);
 
-        scoreService.addScore(currentGameID, playerID, currentTurnIndex, input);
-        // Update ranking
-        List<Score> scores = scoreService.getScores();
-        currentRanking = rankingService.buildRanking(currentGameID, scores, nameByPlayerID);
+        if(!isConsecutiveZero(input)) {
+            scoreService.addScore(currentGameID, playerID, currentTurnIndex, input);
+            // Update ranking
+            List<Score> scores = scoreService.getScores();
+            currentRanking = rankingService.buildRanking(currentGameID, scores, nameByPlayerID);
 
-        advanceTurn();
+            advanceTurn();
+        }else{
+            System.out.println("---Game ends due to consecutive zeros---");
+            // TODO: Display phrase to help players recognition,
+            //       ex) "Scores zero for three round, Game end"
+            ViewManager.switchTo("Result.fxml");
+        }
     }
 
+    private boolean isConsecutiveZero(int score) {
+        int threshold = playerNum * 3;
+
+        if (score == 0) {
+            consecutiveZeroCount++;
+            System.out.println("Score 0 was submitted (" + consecutiveZeroCount + "/" + threshold + ")");
+            return consecutiveZeroCount >= threshold;
+        }
+
+        // non-zero breaks consecutive zeros
+        if (consecutiveZeroCount > 0) {
+            System.out.println("Zero streak reset");
+            consecutiveZeroCount = 0;
+        }
+        return false;
+    }
 
     // Error handling: Score is null/negative/non-digit
     private int parseAndValidate(String input) throws ValidationException{
@@ -115,13 +141,13 @@ public class GameService {
         }
         String normalised = trimmed;
 
-        if(!normalised.matches("\\d+")){
-            throw new ValidationException("Score must be integer");
-        }
-
         int value = Integer.parseInt(normalised);
         if (value < 0) {
-            throw new ValidationException("Score must be natural number.");
+            throw new ValidationException("Score must be 0 or greater.");
+        }
+
+        if(!normalised.matches("\\d+")){
+            throw new ValidationException("Score must be integer");
         }
 
         return value;

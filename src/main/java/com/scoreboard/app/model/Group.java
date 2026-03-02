@@ -7,7 +7,7 @@ import java.util.UUID;
 public class Group {
     private Long id;
     private String name;          // グループ名
-    private boolean temporary;    // 一時グループかどうか（Must要件7,8対策）
+    private boolean isTemporary;    // 一時グループかどうか（Must要件7,8対策）
     private List<Player> players;
     private List<Game> games;
 
@@ -33,7 +33,7 @@ public class Group {
     }
 
     public void setAsTemporaryGroup(){
-        temporary = true;
+        isTemporary = true;
     }
 
     public void setPlayers(List<Player> players) {

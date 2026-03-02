@@ -65,7 +65,7 @@ public class ResultController implements ContextAwareController{
         }
     }
 
-
+    // Not in use yet
     @FXML public void backToHome(){
         ViewManager.switchTo("Menu.fxml");
     }

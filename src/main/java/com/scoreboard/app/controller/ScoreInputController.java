@@ -75,7 +75,6 @@ public class ScoreInputController implements ContextAwareController{
             errorLabel.setText("Please submit your score");
             errorLabel.setVisible(true);
         }else {
-            // Tell GameService and transition into the result scene (skipping penalty scene for now)
             ViewManager.switchTo("Result.fxml");
         }
     }
