@@ -47,7 +47,7 @@ public class ScoreInputController implements ContextAwareController{
 
     private void updatePlayerDisplay(){
         String name = gameService.getCurrentPlayerName();
-        System.out.println("|| Displayed current player: " + name + " ||");
+        System.out.println("|| Current player: " + name + " ||");
         playerNameLabel.setText(name);
     }
 
@@ -72,7 +72,8 @@ public class ScoreInputController implements ContextAwareController{
 
     @FXML private void endGame() throws ValidationException {
         if (!scoreField.getText().isBlank()){
-            throw new ValidationException("Please submit your score");
+            errorLabel.setText("Please submit your score");
+            errorLabel.setVisible(true);
         }else {
             // Tell GameService and transition into the result scene (skipping penalty scene for now)
             ViewManager.switchTo("Result.fxml");

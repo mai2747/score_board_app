@@ -49,6 +49,7 @@ public class RankingService {
 
             String name = nameByPlayerId.getOrDefault(playerId, "(unknown)");
             entries.add(new RankingEntryDTO(rank, playerId, name, total));
+            System.out.println(name + "'s score: " + total + "| Rank." + rank);
         }
         return new RankingDTO(gameID, entries);
     }

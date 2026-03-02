@@ -13,7 +13,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class GroupService {
 
     public Group createGroup(List<String> names){
-        System.out.println("|| Creating new group ||");
+        System.out.println("Creating new group");
         //dummies
         Group newGroup = new Group();
         newGroup.setId();  // setting random id;

@@ -21,6 +21,7 @@ public class GameService {
     private Long currentGameID;
     private Group currentGroup;
     private PlayerInGame currentPlayer;
+    private RankingDTO currentRanking;
 
     public GroupService groupService;
     public ScoreService scoreService;
@@ -65,7 +66,7 @@ public class GameService {
     // Separated from the method above, but does not have proper meaning of use yet
     public void createNewGame(){
         // ** Using dummy information **
-        // Create Game object  * ok to be "new" in this class?
+        // Create Game object  * Should "new" in this class be deleted?
         currentGame = new Game();
         currentGame.setGroupId(currentGroup.getId());
         currentGame.setId(0L);
@@ -90,9 +91,9 @@ public class GameService {
         System.out.println("Score submitted: " + input);
 
         scoreService.addScore(currentGameID, playerID, currentTurnIndex, input);
-        //RankingService
+        // Update ranking
         List<Score> scores = scoreService.getScores();
-        RankingDTO rankingDTO = rankingService.buildRanking(gameId, scores, nameByPlayerId);
+        currentRanking = rankingService.buildRanking(currentGameID, scores, nameByPlayerID);
 
         advanceTurn();
     }
@@ -120,7 +121,7 @@ public class GameService {
 
         int value = Integer.parseInt(normalised);
         if (value < 0) {
-            throw new ValidationException("Score must be 0 or greater.");
+            throw new ValidationException("Score must be natural number.");
         }
 
         return value;
@@ -148,6 +149,10 @@ public class GameService {
     public String getCurrentPlayerName(){
         Long id = currentPlayer.getPlayerId();
         return nameByPlayerID.getOrDefault(id, "");
+    }
+
+    public RankingDTO getCurrentRanking(){
+        return currentRanking;
     }
 
     public void reorder(){
