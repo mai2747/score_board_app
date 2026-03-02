@@ -2,33 +2,36 @@ package com.scoreboard.app.model;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class Group {
-    private Long id;
+    private Long groupID;
     private String name;          // グループ名
     private boolean isTemporary;    // 一時グループかどうか（Must要件7,8対策）
     private List<Player> players;
     private List<Game> games;
 
-    public void setName(String GroupName){
-        name = GroupName;
+
+    public void setName(String groupName){
+        name = groupName;
     }
 
-    public void setId(){
-        id = 0l;  // dummy ... sql AUTOINCREMENT will generate the actual ID in later implementation
+    public String getName(){
+        return name;
     }
 
-    public Long getId(){
-        return id;
+    public void setGroupID(Long groupID) { // Set by repository
+        this.groupID = groupID;
     }
 
-    public List<Long> getPlayerIds(){
+    public Long getGroupID(){
+        return groupID;
+    }
+
+    public List<Long> getPlayerIDs(){
         List<Long> playerIds = new ArrayList<>();
         for (Player player: players){
             playerIds.add(player.getId());
         }
-
         return playerIds;
     }
 
@@ -36,7 +39,15 @@ public class Group {
         isTemporary = true;
     }
 
+    public boolean isTemporary(){
+        return isTemporary;
+    }
+
     public void setPlayers(List<Player> players) {
         this.players = players;
+    }
+
+    public List<Player> getPlayers() {
+        return players;
     }
 }

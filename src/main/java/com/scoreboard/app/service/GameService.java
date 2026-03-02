@@ -2,16 +2,16 @@ package com.scoreboard.app.service;
 
 
 import com.scoreboard.app.Exception.ValidationException;
-import com.scoreboard.app.dto.PlayerDTO;
-import com.scoreboard.app.dto.RankingDTO;
+import com.scoreboard.app.viewmodel.PlayerDTO;
+import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.view.ViewManager;
 
-import javax.swing.text.View;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameService {
     private List<PlayerInGame> playersInGame;      // Player list containing turn order
@@ -43,7 +43,7 @@ public class GameService {
         createNewGroup(names); // Game Object does not have any use yet
         createNewGame();
         // Set gameID to the field
-        currentGameID = getCurrentGame().getId();
+        currentGameID = getCurrentGame().getGameID();
     }
 
     public void createNewGroup(List<String> names) {
@@ -70,9 +70,8 @@ public class GameService {
     public void createNewGame(){
         // ** Using dummy information **
         // Create Game object  * Should "new" in this class be deleted?
-        currentGame = new Game();
-        currentGame.setGroupId(currentGroup.getId());
-        currentGame.setId(0L);
+        Long gameID = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
+        currentGame = new Game(currentGroup);
     }
 
     private Map<Long, String> makeNameList(List<String> names) {

@@ -1,6 +1,6 @@
 package com.scoreboard.app;
 
-import com.scoreboard.app.repository.InMemoryScoreRepository;
+import com.scoreboard.app.repository.memory.InMemoryScoreRepository;
 import com.scoreboard.app.repository.ScoreRepository;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.service.GroupService;

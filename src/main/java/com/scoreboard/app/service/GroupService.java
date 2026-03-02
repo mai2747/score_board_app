@@ -1,6 +1,5 @@
 package com.scoreboard.app.service;
 
-import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.model.PlayerInGame;
@@ -16,17 +15,14 @@ public class GroupService {
         System.out.println("Creating new group");
         //dummies
         Group newGroup = new Group();
-        newGroup.setId();  // setting random id;
         newGroup.setName("Default Group");
         newGroup.setAsTemporaryGroup();
         List<Player> players = new ArrayList<>();
 
         int playerNum = names.size();
         for(int i = 0; i < playerNum; i++){
-            Long dummyPlayerID = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
-            Long dummyGroupID = 123l;
             String playerName = names.get(i);
-            Player player = new Player(dummyPlayerID, dummyGroupID, playerName);
+            Player player = new Player(playerName);
             players.add(player);
         }
         newGroup.setPlayers(players);
@@ -38,7 +34,7 @@ public class GroupService {
         List<PlayerInGame> playersInGame = new ArrayList<>();
 
         int order = 1;
-        for (Long playerId : currentGroup.getPlayerIds()) {  // ← group内のプレイヤーID一覧
+        for (Long playerId : currentGroup.getPlayerIDs()) {  // ← group内のプレイヤーID一覧
             PlayerInGame pig = new PlayerInGame(0l, playerId, order++);
             playersInGame.add(pig);
         }

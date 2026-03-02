@@ -8,17 +8,14 @@ public class Player {
     private Long groupId;     // 所属グループ
     private String name;      // 表示名
 
-    public Player(Long id, Long groupId, String name){
-        this.playerID = id;
-        this.groupId = groupId;
+    public Player(String name){
         this.name = name;
     }
 
-    public Long getId(){
-        return playerID;
-    }
+    public Long getId() { return playerID; }
+    public void setId(Long id) { this.playerID = id; } // Should be used by repository（package-private）
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
+
 }

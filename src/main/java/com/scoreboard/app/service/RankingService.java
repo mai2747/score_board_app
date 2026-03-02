@@ -1,7 +1,7 @@
 package com.scoreboard.app.service;
 
-import com.scoreboard.app.dto.RankingDTO;
-import com.scoreboard.app.dto.RankingEntryDTO;
+import com.scoreboard.app.viewmodel.RankingDTO;
+import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import com.scoreboard.app.model.Score;
 
 import java.util.*;

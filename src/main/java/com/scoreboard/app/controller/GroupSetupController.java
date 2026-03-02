@@ -1,10 +1,6 @@
 package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
-import com.scoreboard.app.repository.InMemoryScoreRepository;
-import com.scoreboard.app.repository.ScoreRepository;
-import com.scoreboard.app.service.GroupService;
-import com.scoreboard.app.service.ScoreService;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;

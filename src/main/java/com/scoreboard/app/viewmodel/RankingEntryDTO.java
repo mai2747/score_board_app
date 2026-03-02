@@ -1,4 +1,4 @@
-package com.scoreboard.app.dto;
+package com.scoreboard.app.viewmodel;
 
 public record RankingEntryDTO(
         int rank,

@@ -1,12 +1,13 @@
-package com.scoreboard.app.repository;
+package com.scoreboard.app.repository.memory;
 
 import com.scoreboard.app.model.Score;
+import com.scoreboard.app.repository.ScoreRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class InMemoryScoreRepository implements ScoreRepository{
+public class InMemoryScoreRepository implements ScoreRepository {
 
     private final List<Score> scores = new ArrayList<>();
 

@@ -1,7 +1,7 @@
 package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
-import com.scoreboard.app.dto.RankingDTO;
+import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
@@ -66,9 +66,8 @@ public class ResultController implements ContextAwareController{
     }
 
     // Not in use yet
-    @FXML public void backToHome(){
+    @FXML
+    public void backToHome(){
         ViewManager.switchTo("Menu.fxml");
     }
-
-    // TODO: After a completion of this class, add method to refresh IDs in a gameService
 }
