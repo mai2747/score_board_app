@@ -55,6 +55,11 @@ public class InMemoryGameRepository implements GameRepository {
         return game;
     }
 
+    // Debug method
+    public int getStoredDataNum(){
+        return store.size();
+    }
+
     @Override
     public Optional<Game> findById(Long id) {
         return Optional.ofNullable(store.get(id));

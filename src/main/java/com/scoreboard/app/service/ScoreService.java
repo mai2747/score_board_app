@@ -31,6 +31,10 @@ public class ScoreService {
         return scoreRepository.getScores();
     }
 
+    public void clearScores(){
+        scoreRepository.clearScores();
+    }
+
     private Long generateDummyID(){
         return ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
     }

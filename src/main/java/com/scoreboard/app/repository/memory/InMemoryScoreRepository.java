@@ -30,4 +30,9 @@ public class InMemoryScoreRepository implements ScoreRepository {
         return scores;
     }
 
+    @Override
+    public void clearScores(){
+        scores.clear();
+    }
+
 }

@@ -2,13 +2,10 @@ package com.scoreboard.app.service;
 
 
 import com.scoreboard.app.Exception.ValidationException;
+import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.viewmodel.PlayerDTO;
 import com.scoreboard.app.viewmodel.RankingDTO;
-import com.scoreboard.app.model.Game;
-import com.scoreboard.app.model.Group;
-import com.scoreboard.app.model.PlayerInGame;
-import com.scoreboard.app.model.Score;
 import com.scoreboard.app.view.ViewManager;
 
 import java.util.*;
@@ -29,6 +26,7 @@ public class GameService {
     public GroupService groupService;
     public ScoreService scoreService;
     public RankingService rankingService;
+    public GameRepository gameRepository;
 
     public int currentTurnIndex = 1;
     private int playerNum;
@@ -37,10 +35,16 @@ public class GameService {
     public GameService(ScoreService scoreService, GroupService groupService, GameRepository gameRepository){
         this.scoreService = scoreService;
         this.groupService = groupService;
+        this.gameRepository = gameRepository;
         rankingService = new RankingService();
     }
 
     public void startGameWithNewGroup(List<String> names, boolean isTemporary){
+        // Clear cache data, should consider the need of separating method
+        System.out.println();
+        System.out.println("--Start Refreshing Data--");
+        refreshData();
+
         createNewGroup(names, isTemporary); // Game Object does not have any use yet
         createNewGame();
         // Set gameID to the field
@@ -163,6 +167,29 @@ public class GameService {
         System.out.println("Next player is " + nameByPlayerID.get(currentPlayer.getPlayerId()));
         currentTurnIndex++;
         System.out.println();
+    }
+
+    public void saveGame(){
+        if(!currentGroup.isTemporary()){
+            gameRepository.save(currentGame);
+
+            Group group = currentGame.getGroup();
+            System.out.println("Saved this game");
+            System.out.println();
+            System.out.println("GameID: " + currentGame.getGameID() + "\n" +
+                               "GroupID: " + group.getGroupID() + "\n" +
+                                "Group Name: " + group.getName() + "\n" +
+                                "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
+            for(Player p: group.getPlayers()){
+                System.out.println(p.getName() + " ID:" + p.getId());
+            }
+
+            System.out.println("Stored data number -> " + gameRepository.getStoredDataNum());
+        }
+    }
+
+    public void refreshData(){
+
     }
 
     public Game getCurrentGame() {

@@ -70,7 +70,7 @@ public class ScoreInputController implements ContextAwareController{
         scoreField.clear();
     }
 
-    @FXML private void endGame() throws ValidationException {
+    @FXML private void endGame(){
         if (!scoreField.getText().isBlank()){
             errorLabel.setText("Please submit your score");
             errorLabel.setVisible(true);
