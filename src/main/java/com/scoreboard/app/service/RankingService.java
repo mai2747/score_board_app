@@ -8,6 +8,7 @@ import java.util.*;
 
 public class RankingService {
 
+    // TODO: Fix even result to show the same ranking
     public RankingDTO buildRanking(Long gameID, List<Score> scores, Map<Long, String> nameByPlayerId){
         // Sum up scores for each player
         Map<Long, Integer> totalByPlayer = new HashMap<>();

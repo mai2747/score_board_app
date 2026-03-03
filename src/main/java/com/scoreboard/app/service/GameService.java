@@ -2,6 +2,7 @@ package com.scoreboard.app.service;
 
 
 import com.scoreboard.app.Exception.ValidationException;
+import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.viewmodel.PlayerDTO;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.model.Game;
@@ -33,23 +34,23 @@ public class GameService {
     private int playerNum;
     private int consecutiveZeroCount = 0;
 
-    public GameService(ScoreService scoreService, GroupService groupService){
+    public GameService(ScoreService scoreService, GroupService groupService, GameRepository gameRepository){
         this.scoreService = scoreService;
         this.groupService = groupService;
         rankingService = new RankingService();
     }
 
-    public void startGameWithNewGroup(List<String> names){
-        createNewGroup(names); // Game Object does not have any use yet
+    public void startGameWithNewGroup(List<String> names, boolean isTemporary){
+        createNewGroup(names, isTemporary); // Game Object does not have any use yet
         createNewGame();
         // Set gameID to the field
         currentGameID = getCurrentGame().getGameID();
     }
 
-    public void createNewGroup(List<String> names) {
+    public void createNewGroup(List<String> names, boolean isTemporary) {
         // Order of player names correspond to the play order
         playerNum = names.size();
-        currentGroup = groupService.createGroup(names);
+        currentGroup = groupService.createGroup(names, isTemporary);
 
         // Create playerInGame, containing the play order in this game
         playersInGame = groupService.makePlayerList(currentGroup);
@@ -60,6 +61,11 @@ public class GameService {
 
         // Create nameByID list. Treated as a cache when the system want to get player names from playerID.
         nameByPlayerID = makeNameList(names);
+
+        System.out.println("Current Player -> " + playersInTurnOrder.get(0).toString());
+        for (PlayerInGame pig : playersInTurnOrder) {
+            System.out.println("PIG: playerId=" + pig.getPlayerId() + ", order=" + pig.getTurnOrder());
+        }
 
         // GameRepository / GamePlayerRepository に保存するのは後で
         // currentGame = gameRepository.save(currentGame)

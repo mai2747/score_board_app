@@ -6,15 +6,46 @@
 
 <Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.GroupSetupController">
    <children>
-      <Button fx:id="startButton" layoutX="262.0" layoutY="271.0" mnemonicParsing="false" onAction="#handleStartButton" text="Start Game" />
-      <Label layoutX="174.0" layoutY="96.0" text="Score Calculator">
+      <VBox fx:id="playerOne" layoutX="99.0" layoutY="93.0" prefHeight="42.0" prefWidth="149.0">
+         <children>
+            <Label text="Player 1" />
+            <TextField fx:id="firstPlayerName" text="Player 1" />
+         </children>
+      </VBox>
+      <Button fx:id="startButton" layoutX="262.0" layoutY="333.0" mnemonicParsing="false" onAction="#handleStartButton" text="Start Game" />
+      <TextField fx:id="groupName" layoutX="225.0" layoutY="273.0" promptText="Group Name (optional)" />
+      <CheckBox fx:id="isTemporary" layoutX="225.0" layoutY="304.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="149.0" text="Set as Temporary Group" selected="true">
          <font>
-            <Font name="Arial" size="34.0" />
+            <Font size="10.0" />
+         </font></CheckBox>
+      <VBox fx:id="playerThree" layoutX="99.0" layoutY="201.0" managed="false" prefHeight="42.0" prefWidth="149.0" visible="false">
+         <children>
+            <Label text="Player 3" />
+            <TextField fx:id="thirdPlayerName" prefHeight="41.0" prefWidth="149.0" text="Player 3" />
+         </children>
+      </VBox>
+      <VBox fx:id="playerFour" layoutX="350.0" layoutY="201.0" managed="false" prefHeight="42.0" prefWidth="149.0" visible="false">
+         <children>
+            <Label text="Player 4" />
+            <TextField fx:id="fourthPlayerName" prefHeight="41.0" prefWidth="149.0" text="Player 4" />
+         </children>
+      </VBox>
+      <VBox fx:id="playerTwo" layoutX="350.0" layoutY="93.0" prefHeight="42.0" prefWidth="149.0">
+         <children>
+            <Label text="Player 2" />
+            <TextField fx:id="secondPlayerName" text="Player 2" />
+         </children>
+      </VBox>
+      <Button fx:id="thirdPlayerButton" layoutX="99.0" layoutY="175.0" mnemonicParsing="false" onAction="#toggleThirdPlayer" text="+ Player">
+         <font>
+            <Font size="11.0" />
          </font>
-      </Label>
-      <TextField fx:id="firstPlayerName" layoutX="100.0" layoutY="212.0" text="Player 1" />
-      <TextField fx:id="secondPlayerName" layoutX="351.0" layoutY="212.0" text="Player 2" />
-      <Label layoutX="100.0" layoutY="183.0" text="Player 1" />
-      <Label layoutX="351.0" layoutY="183.0" text="Player 2" />
+      </Button>
+      <Button fx:id="fourthPlayerButton" layoutX="350.0" layoutY="175.0" mnemonicParsing="false" onAction="#toggleFourthPlayer" text="+ Player" visible="false">
+         <font>
+            <Font size="11.0" />
+         </font>
+      </Button>
+      <Label fx:id="errorLabel" alignment="CENTER" layoutX="188.0" layoutY="369.0" prefHeight="17.0" prefWidth="222.0" textFill="#c90000" />
    </children>
 </Pane>

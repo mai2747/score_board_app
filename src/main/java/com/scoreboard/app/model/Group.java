@@ -1,5 +1,6 @@
 package com.scoreboard.app.model;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,11 @@ public class Group {
     private List<Player> players;
     private List<Game> games;
 
+    public Group(List<Player> players, boolean isTemporary){
+        this.players = players;
+        this.isTemporary = isTemporary;
+        name = "Group [" + LocalDateTime.now() + "]" ;  // Default name
+    }
 
     public void setName(String groupName){
         name = groupName;

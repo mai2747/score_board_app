@@ -27,4 +27,8 @@ public class MenuController implements ContextAwareController {
     @FXML void createGroupTransition() {
         ViewManager.switchTo("GroupSetup.fxml");
     }
+
+    // TODO: Create fxml files for methods below
+    @FXML void selectGroupTransition(){ ViewManager.switchTo("GroupSelect.fxml"); }
+    @FXML void settingTransition(){ ViewManager.switchTo("Setting.fxml"); }
 }

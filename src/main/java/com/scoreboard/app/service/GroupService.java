@@ -3,6 +3,8 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.model.PlayerInGame;
+import com.scoreboard.app.repository.GroupRepository;
+import com.scoreboard.app.repository.PlayerRepository;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -11,23 +13,27 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class GroupService {
 
-    public Group createGroup(List<String> names){
+    private PlayerRepository playerRepository;
+    private GroupRepository groupRepository;
+
+    public GroupService(PlayerRepository playerRepository, GroupRepository groupRepository) {
+        this.playerRepository = playerRepository;
+        this.groupRepository = groupRepository;
+    }
+
+    public Group createGroup(List<String> names, boolean isTemporary){
         System.out.println("Creating new group");
-        //dummies
-        Group newGroup = new Group();
-        newGroup.setName("Default Group");
-        newGroup.setAsTemporaryGroup();
         List<Player> players = new ArrayList<>();
 
         int playerNum = names.size();
         for(int i = 0; i < playerNum; i++){
             String playerName = names.get(i);
-            Player player = new Player(playerName);
-            players.add(player);
+            Player p = new Player(playerName);
+            p.setId(playerRepository.reserveId());
+            players.add(p);
         }
-        newGroup.setPlayers(players);
 
-        return newGroup;
+        return new Group(players, isTemporary);
     }
 
     public List<PlayerInGame> makePlayerList(Group currentGroup){

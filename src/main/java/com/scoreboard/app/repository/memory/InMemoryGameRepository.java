@@ -7,6 +7,7 @@ import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.repository.GroupRepository;
 import com.scoreboard.app.repository.PlayerRepository;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,12 +36,7 @@ public class InMemoryGameRepository implements GameRepository {
         if (group.getPlayers() != null) {
             for (Player p : group.getPlayers()) {
                 if (p == null) continue;
-                if (p.getId() == null) {
-                    playerRepository.save(p);
-                } else {
-                    // If players have IDs already, then update (Just in case, might be deleted.)
-                    playerRepository.save(p);
-                }
+                playerRepository.save(p);
             }
         }
 
