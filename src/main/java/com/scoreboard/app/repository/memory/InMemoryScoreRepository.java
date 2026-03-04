@@ -5,14 +5,17 @@ import com.scoreboard.app.repository.ScoreRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class InMemoryScoreRepository implements ScoreRepository {
 
+    private final AtomicLong seq = new AtomicLong(1);  // Threads safe
     private final List<Score> scores = new ArrayList<>();
 
     @Override
     public void save(Score score) {
+        score.setScoreId(seq.getAndIncrement());
         scores.add(score);
         System.out.println("Score's saved to the Memory");
     }

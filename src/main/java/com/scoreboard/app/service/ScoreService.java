@@ -14,15 +14,9 @@ public class ScoreService {
     }
 
     public void addScore(Long gameId, Long playerId, int turnNumber, int point){
-        // Get id info and put them to the object below
-        // Not sure where to store the list of scores yet, ScoreService(here) or GameService
-
-        // For dummy ID
-        Long dummyID = generateDummyID();
-
         // scoreID can be omitted from Score object in the actual installation when switching to DB
         // But still need to think about the chance of editing past score
-        Score score = new Score(dummyID, gameId, playerId, turnNumber, point);
+        Score score = new Score(gameId, playerId, turnNumber, point);
 
         scoreRepository.save(score);
     }

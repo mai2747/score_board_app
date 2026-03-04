@@ -40,15 +40,22 @@ public class GameService {
     }
 
     public void startGameWithNewGroup(List<String> names, boolean isTemporary){
-        // Clear cache data, should consider the need of separating method
+        // ここを分岐させてnew Group/ exist Groupを分ける？
+        // Set Group -> new / previous / stored Group
+        createNewGroup(names, isTemporary); // Game Object does not have any use yet
+
+        startGame();
+    }
+
+    public void startGame(){
         System.out.println();
         System.out.println("--Start Refreshing Data--");
-        refreshData();
+        System.out.println();
 
-        createNewGroup(names, isTemporary); // Game Object does not have any use yet
+        scoreService.clearScores();
+
         createNewGame();
-        // Set gameID to the field
-        currentGameID = getCurrentGame().getGameID();
+        currentGameID = currentGame.getGameID();
     }
 
     public void createNewGroup(List<String> names, boolean isTemporary) {
@@ -78,10 +85,9 @@ public class GameService {
 
     // Separated from the method above, but does not have proper meaning of use yet
     public void createNewGame(){
-        // ** Using dummy information **
-        // Create Game object  * Should "new" in this class be deleted?
-        Long gameID = ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
+        // Delete this method if there's nothing more to add
         currentGame = new Game(currentGroup);
+        currentGame.setGameID(gameRepository.reserveId());
     }
 
     private Map<Long, String> makeNameList(List<String> names) {
@@ -171,6 +177,7 @@ public class GameService {
 
     public void saveGame(){
         if(!currentGroup.isTemporary()){
+            currentGame.setScores(scoreService.getScores());
             gameRepository.save(currentGame);
 
             Group group = currentGame.getGroup();
@@ -186,10 +193,6 @@ public class GameService {
 
             System.out.println("Stored data number -> " + gameRepository.getStoredDataNum());
         }
-    }
-
-    public void refreshData(){
-
     }
 
     public Game getCurrentGame() {

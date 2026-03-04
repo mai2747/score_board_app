@@ -26,6 +26,11 @@ public class InMemoryGameRepository implements GameRepository {
     }
 
     @Override
+    public Long reserveId(){
+        return seq.getAndIncrement();
+    }
+
+    @Override
     public Game save(Game game) {
         if (game == null) throw new IllegalArgumentException("game is null");
 

@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class Game {
     private Long gameID;
-    private Group group;
+    private Group group; // Replace with groupID?
     private LocalDateTime startedAt;
     private List<Score> scores;
 
@@ -22,4 +22,7 @@ public class Game {
 
     public Group getGroup() { return group; }
     public void setGroup(Group group) { this.group = group; }
+
+    public List<Score> getScores(){ return scores; }
+    public void setScores(List<Score> scores){ this.scores = scores; }
 }

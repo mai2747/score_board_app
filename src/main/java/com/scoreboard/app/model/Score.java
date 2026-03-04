@@ -9,13 +9,14 @@ public class Score {
 
 
 
-    public Score(Long scoreId, Long gameId, Long playerId, int turnNumber, int score){
-        this.scoreId = scoreId;
+    public Score(Long gameId, Long playerId, int turnNumber, int score){
         this.gameId = gameId;
         this.playerId = playerId;
         this.turnNumber = turnNumber;
         this.score = score;
     }
+
+    public void setScoreId(Long scoreId){ this.scoreId = scoreId; }
 
     public Long getGameId(){
         return gameId;
