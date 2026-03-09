@@ -8,8 +8,10 @@ import java.util.List;
 
 public interface ScoreRepository {
 
-    void save(Score score);               // INSERT
+    void save(Score score); // INSERT
+    void update(Long id, int newScore); // UPDATE
     List<Score> getScores();
     void clearScores();
     List<Score> findByGameId(Long gameId); // For getting scores of a game (not used in demo)
+    Score findByScoreId(Long ScoreId);
 }

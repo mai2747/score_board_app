@@ -4,17 +4,14 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
-import com.scoreboard.app.viewmodel.PlayerDTO;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
 
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class GameService {
     private List<PlayerInGame> playersInGame;      // Player list containing turn order
     private List<PlayerInGame> playersInTurnOrder; // Ordered player list
-    private List<PlayerDTO> playerDTO;             // いらないかもPlayerDTO, containing playerID, name, turn order
     private Map<Long, String> nameByPlayerID;
 
     private Game currentGame;
@@ -22,6 +19,8 @@ public class GameService {
     private Group currentGroup;
     private PlayerInGame currentPlayer;
     private RankingDTO currentRanking;
+    private PlayerInGame previousPlayer;
+    private Score previousScore;
 
     public GroupService groupService;
     public ScoreService scoreService;
@@ -42,7 +41,8 @@ public class GameService {
     public void startGameWithNewGroup(List<String> names, boolean isTemporary){
         // ここを分岐させてnew Group/ exist Groupを分ける？
         // Set Group -> new / previous / stored Group
-        createNewGroup(names, isTemporary); // Game Object does not have any use yet
+        currentGroup = groupService.createGroup(names, isTemporary);
+        putGroupInfo(names, isTemporary); // Game Object does not have any use yet
 
         startGame();
     }
@@ -58,10 +58,9 @@ public class GameService {
         currentGameID = currentGame.getGameID();
     }
 
-    public void createNewGroup(List<String> names, boolean isTemporary) {
+    public void putGroupInfo(List<String> names, boolean isTemporary) {
         // Order of player names correspond to the play order
         playerNum = names.size();
-        currentGroup = groupService.createGroup(names, isTemporary);
 
         // Create playerInGame, containing the play order in this game
         playersInGame = groupService.makePlayerList(currentGroup);
@@ -104,23 +103,52 @@ public class GameService {
     }
 
     public void submitScore(String scoreInField) throws ValidationException {
-        Long playerID = currentPlayer.getPlayerId();
         int input = parseAndValidate(scoreInField);
+        Long playerId = currentPlayer.getPlayerId();
+
         System.out.println("Score submitted: " + input);
 
-        if(!isConsecutiveZero(input)) {
-            scoreService.addScore(currentGameID, playerID, currentTurnIndex, input);
-            // Update ranking
-            List<Score> scores = scoreService.getScores();
-            currentRanking = rankingService.buildRanking(currentGameID, scores, nameByPlayerID);
-
-            advanceTurn();
-        }else{
-            System.out.println("---Game ends due to consecutive zeros---");
-            // TODO: Display phrase to help players recognition,
-            //       ex) "Scores zero for three round, Game end"
-            ViewManager.switchTo("Result.fxml");
+        if (isConsecutiveZero(input)) {
+            endGame();
+            return;
         }
+
+        scoreService.addScore(currentGameID, playerId, currentTurnIndex, input);
+        afterScoreChanged(true);
+
+        advanceTurn();
+    }
+
+    public void editPrevScore(String scoreInField) throws ValidationException {
+        int input = parseAndValidate(scoreInField);
+
+        System.out.println("Previous score is edited: " + previousScore.getScore() + " -> " + input);
+
+        if (isConsecutiveZero(input)) {
+            endGame();
+            return;
+        }
+
+        System.out.println("PrevScore ID: " + previousScore.getScoreId());
+        scoreService.editPrevScore(previousScore.getScoreId(), input);
+        afterScoreChanged(false);
+    }
+
+    private void afterScoreChanged(boolean useLastScoreAsPrevious) {
+        List<Score> scores = scoreService.getScores();
+
+        if (useLastScoreAsPrevious && !scores.isEmpty()) {
+            previousScore = scores.get(scores.size() - 1);
+        }
+
+        currentRanking = rankingService.buildRanking(currentGameID, scores, nameByPlayerID);
+    }
+
+    private void endGame() {
+        System.out.println("---Game ends due to consecutive zeros---");
+        // TODO: Display phrase to help players recognition,
+        //       ex) "Scores zero for three round, Game end"
+        ViewManager.switchTo("Result.fxml");
     }
 
     private boolean isConsecutiveZero(int score) {
@@ -138,6 +166,34 @@ public class GameService {
             consecutiveZeroCount = 0;
         }
         return false;
+    }
+
+    public void advanceTurn() {
+        previousPlayer = currentPlayer;
+        currentPlayer = playersInTurnOrder.get(currentTurnIndex++ % playerNum);
+
+        System.out.println("Next player is " + nameByPlayerID.get(currentPlayer.getPlayerId()));
+        System.out.println();
+    }
+
+    public void saveGame(){
+        if(!currentGroup.isTemporary()){
+            currentGame.setScores(scoreService.getScores());
+            gameRepository.save(currentGame);
+
+            Group group = currentGame.getGroup();
+            System.out.println("Saved this game");
+            System.out.println();
+            System.out.println("GameID: " + currentGame.getGameID() + "\n" +
+                    "GroupID: " + group.getGroupID() + "\n" +
+                    "Group Name: " + group.getName() + "\n" +
+                    "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
+            for(Player p: group.getPlayers()){
+                System.out.println(p.getName() + " ID:" + p.getId());
+            }
+
+            System.out.println("Stored data number -> " + gameRepository.getStoredDataNum());
+        }
     }
 
     // Error handling: Score is null/negative/non-digit
@@ -168,33 +224,6 @@ public class GameService {
         return value;
     }
 
-    public void advanceTurn() {
-        currentPlayer = playersInTurnOrder.get(currentTurnIndex % playerNum);
-        System.out.println("Next player is " + nameByPlayerID.get(currentPlayer.getPlayerId()));
-        currentTurnIndex++;
-        System.out.println();
-    }
-
-    public void saveGame(){
-        if(!currentGroup.isTemporary()){
-            currentGame.setScores(scoreService.getScores());
-            gameRepository.save(currentGame);
-
-            Group group = currentGame.getGroup();
-            System.out.println("Saved this game");
-            System.out.println();
-            System.out.println("GameID: " + currentGame.getGameID() + "\n" +
-                               "GroupID: " + group.getGroupID() + "\n" +
-                                "Group Name: " + group.getName() + "\n" +
-                                "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
-            for(Player p: group.getPlayers()){
-                System.out.println(p.getName() + " ID:" + p.getId());
-            }
-
-            System.out.println("Stored data number -> " + gameRepository.getStoredDataNum());
-        }
-    }
-
     public Game getCurrentGame() {
         return currentGame;
     }
@@ -207,13 +236,21 @@ public class GameService {
         return currentPlayer;
     }
 
-    public String getCurrentPlayerName(){
-        Long id = currentPlayer.getPlayerId();
+    public String getPlayerName(PlayerInGame player){
+        Long id = player.getPlayerId();
         return nameByPlayerID.getOrDefault(id, "");
     }
 
     public RankingDTO getCurrentRanking(){
         return currentRanking;
+    }
+
+    public Score getPrevScore(){
+        return previousScore;
+    }
+
+    public PlayerInGame getPrevPlayer(){
+        return previousPlayer;
     }
 
     public void reorder(){

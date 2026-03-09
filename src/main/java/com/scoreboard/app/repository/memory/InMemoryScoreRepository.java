@@ -27,6 +27,23 @@ public class InMemoryScoreRepository implements ScoreRepository {
                 .collect(Collectors.toList());
     }
 
+    @Override
+    public Score findByScoreId(Long scoreId) {
+        return scores.stream()
+                .filter(s -> s.getScoreId().equals(scoreId))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Score not found: " + scoreId));
+    }
+
+    @Override
+    public void update(Long id, int newScore){
+        scores.stream()
+                .filter(s -> s.getScoreId().equals(id))
+                .findFirst()
+                .ifPresent(s -> s.setScore(newScore));
+        System.out.println("Score's updated in the Memory");
+    }
+
     // Get scores to make ranking
     @Override
     public List<Score> getScores(){

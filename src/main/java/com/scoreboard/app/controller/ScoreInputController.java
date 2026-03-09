@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.Pane;
 
 
 public class ScoreInputController implements ContextAwareController{
@@ -19,6 +20,13 @@ public class ScoreInputController implements ContextAwareController{
     @FXML private TextField scoreField;
     @FXML private Label errorLabel;
     @FXML private Button submitButton;
+
+    @FXML private Label prevPlayerLabel;
+    @FXML private TextField prevScoreField;
+    @FXML private Label infoLabel;
+    @FXML private Button editScoreButton;
+
+    @FXML private Pane prevScorePane;
 
     private GameService gameService;
 
@@ -43,12 +51,19 @@ public class ScoreInputController implements ContextAwareController{
         submitButton.tooltipProperty().bind(
                 javafx.beans.binding.Bindings.when(empty).then(tip).otherwise((javafx.scene.control.Tooltip) null)
         );
+
+        prevScorePane.setVisible(false);
     }
 
     private void updatePlayerDisplay(){
-        String name = gameService.getCurrentPlayerName();
+        String name = gameService.getPlayerName(gameService.getCurrentPlayer());
         System.out.println("|| Current player: " + name + " ||");
         playerNameLabel.setText(name);
+
+        if(gameService.getPrevPlayer() != null){
+            String prevPlayerName = gameService.getPlayerName(gameService.getPrevPlayer());
+            prevPlayerLabel.setText(prevPlayerName);
+        }
     }
 
     @FXML private void submitScore(ActionEvent event){
@@ -56,6 +71,8 @@ public class ScoreInputController implements ContextAwareController{
 
         errorLabel.setText("");
         errorLabel.setVisible(false);
+        infoLabel.setText("");
+        infoLabel.setVisible(false);
 
         // Submit score and advance turn to the next player
         try {
@@ -67,7 +84,26 @@ public class ScoreInputController implements ContextAwareController{
         }
 
         updatePlayerDisplay();
+        prevScorePane.setVisible(true);
+        prevScoreField.setText(scoreInField);
         scoreField.clear();
+    }
+
+    @FXML private void editScore(){
+        String prevScoreInField = prevScoreField.getText();
+        int prevScore = gameService.getPrevScore().getScore();
+
+        infoLabel.setText("");
+        infoLabel.setVisible(false);
+
+        try {
+            gameService.editPrevScore(prevScoreInField);
+            prevScoreField.setText(Integer.toString(gameService.getPrevScore().getScore()));
+            infoLabel.setText("Score updated:" + prevScore + " -> " + prevScoreInField);
+        } catch (ValidationException e) {
+            infoLabel.setText(e.getMessage());
+            infoLabel.setVisible(true);
+        }
     }
 
     @FXML private void endGame(){

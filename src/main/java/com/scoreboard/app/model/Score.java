@@ -16,7 +16,11 @@ public class Score {
         this.score = score;
     }
 
+    public void setScore(int score){ this.score = score; }
+
     public void setScoreId(Long scoreId){ this.scoreId = scoreId; }
+
+    public Long getScoreId(){ return scoreId; }
 
     public Long getGameId(){
         return gameId;

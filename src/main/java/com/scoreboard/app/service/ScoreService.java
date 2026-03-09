@@ -21,6 +21,10 @@ public class ScoreService {
         scoreRepository.save(score);
     }
 
+    public void editPrevScore(Long id, int newScore){
+        scoreRepository.update(id, newScore);
+    }
+
     public List<Score> getScores(){
         return scoreRepository.getScores();
     }
@@ -33,9 +37,3 @@ public class ScoreService {
         return ThreadLocalRandom.current().nextLong(1, Long.MAX_VALUE);
     }
 }
-
-//private Long id;
-//private Long gameId;
-//private Long playerId;
-//private int turnNumber;   // 1手目、2手目…
-//private int points;       // このターンで獲得した点
