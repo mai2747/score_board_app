@@ -6,6 +6,7 @@ import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
+import com.scoreboard.app.viewmodel.RankingEntryDTO;
 
 import java.util.*;
 
@@ -21,6 +22,7 @@ public class GameService {
     private RankingDTO currentRanking;
     private PlayerInGame previousPlayer;
     private Score previousScore;
+    private Boolean isLiveRankingDisplayOn;
 
     public GroupService groupService;
     public ScoreService scoreService;
@@ -245,8 +247,8 @@ public class GameService {
         return currentGame;
     }
 
-    public RankingDTO getCurrentRanking(){
-        return currentRanking;
+    public List<RankingEntryDTO> getCurrentRanking(){
+        return currentRanking.entries();
     }
 
     public List<PlayerInGame> getPlayersInGame() {
@@ -265,7 +267,11 @@ public class GameService {
         return previousPlayer;
     }
 
-    public void reorder(){
-        // For the additional function: Reorder & Start new game
+    public void setIsLiveRankingDisplayOn(boolean rankingOn){
+        isLiveRankingDisplayOn = rankingOn;
+    }
+
+    public Boolean getLiveRankingDisplayOn() {
+        return isLiveRankingDisplayOn;
     }
 }

@@ -27,6 +27,7 @@ public class GroupSetupController implements ContextAwareController{
     @FXML private Button thirdPlayerButton;
     @FXML private Button fourthPlayerButton;
     @FXML private CheckBox isTemporary;
+    @FXML private CheckBox isShowRankingsOn;
     @FXML private Label errorLabel;
 
     private GameService gameService;
@@ -72,6 +73,7 @@ public class GroupSetupController implements ContextAwareController{
         System.out.println();
 
         gameService.startGameWithNewGroup(playerNames, isTemporary.isSelected());
+        gameService.setIsLiveRankingDisplayOn(isShowRankingsOn.isSelected());
         ViewManager.switchTo("ScoreInput.fxml");
     }
 

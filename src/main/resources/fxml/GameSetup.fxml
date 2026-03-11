@@ -4,7 +4,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.GameSetupController">
+<AnchorPane fx:id="showRankingsCheckBox" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.GameSetupController">
    <children>
       <ListView fx:id="playerOrderListView" layoutX="127.0" layoutY="100.0" prefHeight="200.0" prefWidth="200.0" />
       <Button layoutX="479.0" layoutY="338.0" mnemonicParsing="false" onAction="#startGame" text="Start Game" />
@@ -17,5 +17,6 @@
       </Label>
       <Button layoutX="40.0" layoutY="149.0" mnemonicParsing="false" onAction="#moveUp" text="Up" />
       <Button layoutX="40.0" layoutY="213.0" mnemonicParsing="false" onAction="#moveDown" text="Down" />
+      <CheckBox fx:id="isShowRankingsOn" layoutX="354.0" layoutY="109.0" mnemonicParsing="false" text="Show rankings and scores during a game" />
    </children>
 </AnchorPane>

@@ -4,6 +4,7 @@ import com.scoreboard.app.AppContext;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
+import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 
@@ -44,13 +45,13 @@ public class ResultController implements ContextAwareController{
 
     private void renderRanking() {
         System.out.println("|| Game Finished ||");
-        RankingDTO ranking = gameService.getCurrentRanking(); // assume
+        List<RankingEntryDTO> ranking = gameService.getCurrentRanking(); // assume
 
-        int n = (ranking == null) ? 0 : ranking.entries().size();
+        int n = (ranking == null) ? 0 : ranking.size();
 
         for (int i = 0; i < rankLabels.size(); i++) {
             if (i < n) {
-                var e = ranking.entries().get(i);
+                var e = ranking.get(i);
 
                 rankLabels.get(i).setVisible(true);
                 scoreLabels.get(i).setVisible(true);
@@ -58,7 +59,7 @@ public class ResultController implements ContextAwareController{
                 rankLabels.get(i).setText((i+1) + ". " + e.playerName());
                 scoreLabels.get(i).setText(String.valueOf(e.totalScore()));
 
-                System.out.println(i + ". " + e.playerName() + ":" + e.totalScore());
+                System.out.println((i+1) + "." + e.playerName() + ": " + e.totalScore());
             } else {
                 rankLabels.get(i).setText("-");
                 scoreLabels.get(i).setText("-");

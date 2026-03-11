@@ -6,12 +6,18 @@ import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
+import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
+
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 
 public class ScoreInputController implements ContextAwareController{
@@ -21,12 +27,18 @@ public class ScoreInputController implements ContextAwareController{
     @FXML private Label errorLabel;
     @FXML private Button submitButton;
 
+    @FXML private Label firstRanked;
+    @FXML private Label secondRanked;
+    @FXML private Label thirdRanked;
+    @FXML private Label fourthRanked;
+
     @FXML private Label prevPlayerLabel;
     @FXML private TextField prevScoreField;
     @FXML private Label infoLabel;
-    @FXML private Button editScoreButton;
 
     @FXML private Pane prevScorePane;
+    @FXML private Pane currentRankingPane;
+    @FXML private VBox currentRankings;
 
     private GameService gameService;
 
@@ -34,6 +46,7 @@ public class ScoreInputController implements ContextAwareController{
     public void setContext(AppContext context){
         this.gameService = context.gameService();
 
+        if(gameService.getLiveRankingDisplayOn()) currentRankingPane.setVisible(true);
         updatePlayerDisplay();
     }
 
@@ -55,6 +68,24 @@ public class ScoreInputController implements ContextAwareController{
         prevScorePane.setVisible(false);
     }
 
+    @FXML private void submitScore(ActionEvent event){
+        String scoreInField = scoreField.getText();
+
+        errorLabel.setText("");
+        errorLabel.setVisible(false);
+
+        try {
+            gameService.submitScore(scoreInField);
+        } catch (ValidationException e) {
+            errorLabel.setText(e.getMessage());
+            errorLabel.setVisible(true);
+            return;
+        }
+
+        refreshLabels(scoreInField);
+        if(gameService.getLiveRankingDisplayOn()) updateRankingDisplay();
+    }
+
     private void updatePlayerDisplay(){
         String name = gameService.getPlayerName(gameService.getCurrentPlayer());
         System.out.println("|| Current player: " + name + " ||");
@@ -66,23 +97,29 @@ public class ScoreInputController implements ContextAwareController{
         }
     }
 
-    @FXML private void submitScore(ActionEvent event){
-        String scoreInField = scoreField.getText();
+    private void updateRankingDisplay(){
+        if(!currentRankingPane.isVisible()) return;
 
-        errorLabel.setText("");
-        errorLabel.setVisible(false);
+        List<RankingEntryDTO> rankings = gameService.getCurrentRanking()
+                .stream()
+                .sorted(Comparator.comparingInt(RankingEntryDTO::rank))
+                .toList();
+
+        List<Label> labels = List.of(firstRanked, secondRanked, thirdRanked, fourthRanked);
+
+        for (int i = 0; i < labels.size(); i++) {
+            if (i < rankings.size()) {
+                RankingEntryDTO entry = rankings.get(i);
+                labels.get(i).setText((i + 1) + ". " + entry.playerName() + " : " + entry.totalScore());
+            } else {
+                labels.get(i).setText("");
+            }
+        }
+    }
+
+    private void refreshLabels(String scoreInField){
         infoLabel.setText("");
         infoLabel.setVisible(false);
-
-        // Submit score and advance turn to the next player
-        try {
-            gameService.submitScore(scoreInField);
-        } catch (ValidationException e) {
-            errorLabel.setText(e.getMessage());
-            errorLabel.setVisible(true);
-            return;
-        }
-
         updatePlayerDisplay();
         prevScorePane.setVisible(true);
         prevScoreField.setText(scoreInField);
@@ -104,6 +141,8 @@ public class ScoreInputController implements ContextAwareController{
             infoLabel.setText(e.getMessage());
             infoLabel.setVisible(true);
         }
+
+        if(gameService.getLiveRankingDisplayOn()) updateRankingDisplay();
     }
 
     @FXML private void endGame(){

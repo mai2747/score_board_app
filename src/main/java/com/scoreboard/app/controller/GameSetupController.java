@@ -8,6 +8,7 @@ import com.scoreboard.app.view.ViewManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 
@@ -16,6 +17,7 @@ import java.util.List;
 
 public class GameSetupController implements ContextAwareController{
     @FXML private ListView<Player> playerOrderListView;
+    @FXML private CheckBox showRankingsCheckBox;
 
     private ObservableList<Player> players;
     private GameService gameService;
@@ -61,7 +63,14 @@ public class GameSetupController implements ContextAwareController{
     }
 
     @FXML
+    private void checkIfShowRankings(){
+        gameService.setIsLiveRankingDisplayOn(showRankingsCheckBox.isSelected());
+    }
+
+    @FXML
     private void startGame() {
+        checkIfShowRankings();
+
         List<Long> orderedPlayerIds = players.stream()
                 .map(Player::getId)
                 .toList();
