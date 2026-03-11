@@ -66,7 +66,11 @@ public class ResultController implements ContextAwareController{
         }
     }
 
-    // Not in use yet
+    @FXML
+    public void playAgain(){
+        ViewManager.switchTo("GameSetup.fxml");
+    }
+
     @FXML
     public void backToHome(){
         ViewManager.switchTo("Menu.fxml");

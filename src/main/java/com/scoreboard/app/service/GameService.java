@@ -38,48 +38,51 @@ public class GameService {
         rankingService = new RankingService();
     }
 
-    public void startGameWithNewGroup(List<String> names, boolean isTemporary){
-        // ここを分岐させてnew Group/ exist Groupを分ける？
-        // Set Group -> new / previous / stored Group
-        currentGroup = groupService.createGroup(names, isTemporary);
-        putGroupInfo(names, isTemporary); // Game Object does not have any use yet
-
-        startGame();
-    }
-
     public void startGame(){
         System.out.println();
         System.out.println("--Start Refreshing Data--");
         System.out.println();
 
         scoreService.clearScores();
+        consecutiveZeroCount = 0;
+        currentTurnIndex = 1;
 
         createNewGame();
         currentGameID = currentGame.getGameID();
     }
 
-    public void putGroupInfo(List<String> names, boolean isTemporary) {
-        // Order of player names correspond to the play order
-        playerNum = names.size();
+    public void startGameWithNewGroup(List<String> names, boolean isTemporary) {
+        currentGroup = groupService.createGroup(names, isTemporary);
 
-        // Create playerInGame, containing the play order in this game
-        playersInGame = groupService.makePlayerList(currentGroup);
+        List<Long> orderedIDs = currentGroup.getPlayers().stream()
+                .map(Player::getId)
+                .toList();
 
-        // Get player list in a playing order
+        initializeGameWithOrderedIDs(orderedIDs);
+        startGame();
+    }
+
+    public void startGameWithExistingGroup(List<Long> orderedIDs) {
+        initializeGameWithOrderedIDs(orderedIDs);
+        startGame();
+    }
+
+    private void initializeGameWithOrderedIDs(List<Long> orderedIDs) {
+        playerNum = orderedIDs.size();
+
+        playersInGame = groupService.makePlayerList(currentGroup, orderedIDs);
         playersInTurnOrder = groupService.getOrderedPlayers(playersInGame);
         currentPlayer = playersInTurnOrder.get(0);
+        nameByPlayerID = makeNameList();
 
-        // Create nameByID list. Treated as a cache when the system want to get player names from playerID.
-        nameByPlayerID = makeNameList(names);
-
-        System.out.println("Current Player -> " + playersInTurnOrder.get(0).toString());
+        System.out.println("Current Player -> " + currentPlayer);
         for (PlayerInGame pig : playersInTurnOrder) {
             System.out.println("PIG: playerId=" + pig.getPlayerId() + ", order=" + pig.getTurnOrder());
         }
+    }
 
-        // GameRepository / GamePlayerRepository に保存するのは後で
-        // currentGame = gameRepository.save(currentGame)
-        // gamePlayerRepository.batchInsert(playersInGame)
+    public void selectGroup(Long groupID){
+        currentGroup = groupService.getGroupByID(groupID);
     }
 
     // Separated from the method above, but does not have proper meaning of use yet
@@ -89,16 +92,13 @@ public class GameService {
         currentGame.setGameID(gameRepository.reserveId());
     }
 
-    private Map<Long, String> makeNameList(List<String> names) {
+    private Map<Long, String> makeNameList() {
         Map<Long, String> nameByID = new HashMap<>();
-        int len = names.size();
 
-        // Since names is supposed to be obtained in the order the same as turn order,
-        // playerID is assumed to correspond to the name order.
-        // ** If this is considered to be vulnerable to the system, should be modified
-        for(int i = 0; i < len; i++) {
-            nameByID.put(playersInTurnOrder.get(i).getPlayerId(), names.get(i));
+        for (Player player : currentGroup.getPlayers()) {
+            nameByID.put(player.getId(), player.getName());
         }
+
         return nameByID;
     }
 
@@ -186,7 +186,7 @@ public class GameService {
             System.out.println();
             System.out.println("GameID: " + currentGame.getGameID() + "\n" +
                     "GroupID: " + group.getGroupID() + "\n" +
-                    "Group Name: " + group.getName() + "\n" +
+                    "Group Name: " + group.getGroupName() + "\n" +
                     "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
             for(Player p: group.getPlayers()){
                 System.out.println(p.getName() + " ID:" + p.getId());
@@ -224,25 +224,37 @@ public class GameService {
         return value;
     }
 
-    public Game getCurrentGame() {
-        return currentGame;
+    public String getPlayerName(PlayerInGame player){
+        Long id = player.getPlayerId();
+        return nameByPlayerID.getOrDefault(id, "");
     }
 
-    public List<PlayerInGame> getPlayersInGame() {
-        return playersInGame;
+    // Return should be String/List<Player>/Group???
+    public List<Player> getPlayers(){
+        List<Player> players = new ArrayList<>();
+
+        players.addAll(currentGroup.getPlayers());
+        return players;
     }
 
     public PlayerInGame getCurrentPlayer() {
         return currentPlayer;
     }
 
-    public String getPlayerName(PlayerInGame player){
-        Long id = player.getPlayerId();
-        return nameByPlayerID.getOrDefault(id, "");
+    public Game getCurrentGame() {
+        return currentGame;
     }
 
     public RankingDTO getCurrentRanking(){
         return currentRanking;
+    }
+
+    public List<PlayerInGame> getPlayersInGame() {
+        return playersInGame;
+    }
+
+    public Group getCurrentGroup(){
+        return currentGroup;
     }
 
     public Score getPrevScore(){

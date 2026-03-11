@@ -13,6 +13,8 @@ public class ScoreService {
         this.scoreRepository = repo;
     }
 
+    // TODO: Plan well: Scores for temporary group are not required to record in repository
+    //       However recording to repo would be nicer in the aspect of pausing a game
     public void addScore(Long gameId, Long playerId, int turnNumber, int point){
         // scoreID can be omitted from Score object in the actual installation when switching to DB
         // But still need to think about the chance of editing past score

@@ -15,6 +15,9 @@ public class Player {
     public Long getId() { return playerID; }
     public void setId(Long id) { this.playerID = id; } // Should be used by repository（package-private）
 
+    public Long getGroupId() { return groupId; }
+    public void setGroupId(Long groupId) { this.groupId = groupId; }
+
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 

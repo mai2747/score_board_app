@@ -33,4 +33,12 @@ public class InMemoryPlayerRepository implements PlayerRepository {
     public Optional<Player> findById(Long id) {
         return Optional.ofNullable(store.get(id));
     }
+
+    @Override
+    public Optional<Player> findByGroupIdAndName(Long groupId, String name) {
+        return store.values().stream()
+                .filter(player -> groupId.equals(player.getGroupId()))
+                .filter(player -> name.equals(player.getName()))
+                .findFirst();
+    }
 }

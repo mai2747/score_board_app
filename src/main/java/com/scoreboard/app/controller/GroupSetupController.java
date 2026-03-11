@@ -145,4 +145,9 @@ public class GroupSetupController implements ContextAwareController{
         node.setVisible(visible);
         node.setManaged(visible);
     }
+
+    @FXML
+    public void backToHome(){
+        ViewManager.switchTo("Menu.fxml");
+    }
 }

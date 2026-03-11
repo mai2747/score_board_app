@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.GameSetupController">
+   <children>
+      <ListView fx:id="playerOrderListView" layoutX="127.0" layoutY="100.0" prefHeight="200.0" prefWidth="200.0" />
+      <Button layoutX="479.0" layoutY="338.0" mnemonicParsing="false" onAction="#startGame" text="Start Game" />
+      <Button layoutX="40.0" layoutY="338.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
+      <Label layoutX="51.0" layoutY="100.0" text="Reorder" />
+      <Label layoutX="264.0" layoutY="40.0" prefHeight="48.0" prefWidth="148.0" text="Game Settings">
+         <font>
+            <Font size="21.0" />
+         </font>
+      </Label>
+      <Button layoutX="40.0" layoutY="149.0" mnemonicParsing="false" onAction="#moveUp" text="Up" />
+      <Button layoutX="40.0" layoutY="213.0" mnemonicParsing="false" onAction="#moveDown" text="Down" />
+   </children>
+</AnchorPane>

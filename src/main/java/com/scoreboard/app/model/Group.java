@@ -1,6 +1,7 @@
 package com.scoreboard.app.model;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,17 +12,19 @@ public class Group {
     private List<Player> players;
     private List<Game> games;
 
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     public Group(List<Player> players, boolean isTemporary){
         this.players = players;
         this.isTemporary = isTemporary;
-        name = "Group [" + LocalDateTime.now() + "]" ;  // Default name
+        name = "Group [" + LocalDateTime.now().format(formatter) + "]" ;  // Default name
     }
 
-    public void setName(String groupName){
+    public void setGroupName(String groupName){
         name = groupName;
     }
 
-    public String getName(){
+    public String getGroupName(){
         return name;
     }
 

@@ -14,7 +14,7 @@
       </VBox>
       <Button fx:id="startButton" layoutX="262.0" layoutY="333.0" mnemonicParsing="false" onAction="#handleStartButton" text="Start Game" />
       <TextField fx:id="groupName" layoutX="225.0" layoutY="273.0" promptText="Group Name (optional)" />
-      <CheckBox fx:id="isTemporary" layoutX="225.0" layoutY="304.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="149.0" text="Set as Temporary Group" selected="true">
+      <CheckBox fx:id="isTemporary" layoutX="225.0" layoutY="304.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="149.0" selected="true" text="Set as Temporary Group">
          <font>
             <Font size="10.0" />
          </font></CheckBox>
@@ -47,5 +47,6 @@
          </font>
       </Button>
       <Label fx:id="errorLabel" alignment="CENTER" layoutX="188.0" layoutY="369.0" prefHeight="17.0" prefWidth="222.0" textFill="#c90000" />
+      <Button layoutX="28.0" layoutY="333.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
    </children>
 </Pane>

@@ -4,6 +4,8 @@ import com.scoreboard.app.model.Group;
 import com.scoreboard.app.repository.GroupRepository;
 import com.scoreboard.app.repository.PlayerRepository;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +23,7 @@ public class InMemoryGroupRepository implements GroupRepository {
 
     @Override
     public Group save(Group group) {
-        if (group == null) throw new IllegalArgumentException("group is null");
+        if (group == null) throw new IllegalArgumentException("Group is null");
 
         if (group.getGroupID() == null) {
             group.setGroupID(seq.getAndIncrement()); // AUTOINCREMENT
@@ -31,7 +33,15 @@ public class InMemoryGroupRepository implements GroupRepository {
     }
 
     @Override
-    public Optional<Group> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
+    public Group findById(Long id) {
+        Group group = store.get(id);
+        if (group == null) {
+            throw new IllegalArgumentException("Group not found: " + id);
+        }
+        return group;
+    }
+
+    public List<Group> findAll(){
+        return new ArrayList<>(store.values());
     }
 }

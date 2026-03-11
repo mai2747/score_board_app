@@ -7,4 +7,5 @@ public interface PlayerRepository {
     long reserveId();
     Player save(Player player);                 // insert or update
     Optional<Player> findById(Long id);
+    Optional<Player> findByGroupIdAndName(Long groupId, String name);
 }

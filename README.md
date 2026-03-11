@@ -1,7 +1,7 @@
 # Scrabble Score Board
 
 ⚠️ This project is currently under active development.  
-The current implementation focuses on **Milestone 1.1: Core Gameplay**.
+The current implementation focuses on **Milestone 1.2: Enhanced Gameplay and Visualisation**.
 
 ---
 
