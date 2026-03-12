@@ -55,11 +55,3 @@ public class RankingService {
         return new RankingDTO(gameID, entries);
     }
 }
-
-/*
-RankingEntryDTO(
-        int rank,
-        Long playerId,
-        String playerName,
-        int totalScore
- */

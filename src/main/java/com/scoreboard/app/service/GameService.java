@@ -226,9 +226,8 @@ public class GameService {
         return value;
     }
 
-    public String getPlayerName(PlayerInGame player){
-        Long id = player.getPlayerId();
-        return nameByPlayerID.getOrDefault(id, "");
+    public String getPlayerNameByID(Long id){
+        return nameByPlayerID.getOrDefault(id, "Unknown Player");
     }
 
     // Return should be String/List<Player>/Group???

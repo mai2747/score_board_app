@@ -68,6 +68,11 @@ public class ResultController implements ContextAwareController{
     }
 
     @FXML
+    public void handleChartView(){
+        ViewManager.switchTo("ChartView.fxml");
+    }
+
+    @FXML
     public void playAgain(){
         ViewManager.switchTo("GameSetup.fxml");
     }

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<AnchorPane stylesheets="@../css/chart.css" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.ChartViewController">
+   <children>
+      <LineChart fx:id="scoreChart" layoutX="72.0" layoutY="14.0" prefHeight="303.0" prefWidth="456.0">
+          <xAxis>
+              <NumberAxis fx:id="xAxis" label="Turn" />
+          </xAxis>
+          <yAxis>
+              <NumberAxis fx:id="yAxis" label="Total Score" />
+          </yAxis>
+      </LineChart>
+      <Button layoutX="139.0" layoutY="334.0" mnemonicParsing="false" onAction="#backToRankings" text="Back to Rankings" />
+      <Button layoutX="362.0" layoutY="334.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
+   </children>
+</AnchorPane>

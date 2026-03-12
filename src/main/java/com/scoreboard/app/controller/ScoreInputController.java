@@ -87,12 +87,12 @@ public class ScoreInputController implements ContextAwareController{
     }
 
     private void updatePlayerDisplay(){
-        String name = gameService.getPlayerName(gameService.getCurrentPlayer());
+        String name = gameService.getPlayerNameByID(gameService.getCurrentPlayer().getPlayerId());
         System.out.println("|| Current player: " + name + " ||");
         playerNameLabel.setText(name);
 
         if(gameService.getPrevPlayer() != null){
-            String prevPlayerName = gameService.getPlayerName(gameService.getPrevPlayer());
+            String prevPlayerName = gameService.getPlayerNameByID(gameService.getPrevPlayer().getPlayerId());
             prevPlayerLabel.setText(prevPlayerName);
         }
     }
