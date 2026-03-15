@@ -1,5 +1,7 @@
 package com.scoreboard.app.model;
 
+import com.scoreboard.app.service.GameService;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -10,12 +12,20 @@ public class Game {
     private LocalDateTime startedAt;
     private List<Score> scores;
 
+    // Consider later: Should combine them into the one entity class?
+    private GameSettings gameSettings;
     private List<PlayerInGame> playersInGame; // プレイ順を含む
 
-    public Game(Group group) {
+    public Game(Group group, GameSettings gameSettings) {
         this.group = group;
+        this.gameSettings = gameSettings;
         startedAt = LocalDateTime.now();
     }
+
+    public GameSettings getSettings() {
+        return gameSettings;
+    }
+    public void setSettings(GameSettings gameSettings) { this.gameSettings = gameSettings; }
 
     public Long getGameID() { return gameID; }
     public void setGameID(Long id) { this.gameID = id; } // repositoryからのみ

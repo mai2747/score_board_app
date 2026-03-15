@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import java.util.*?>
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<DialogPane xmlns="http://javafx.com/javafx/17.0.12"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.scoreboard.app.controller.GameSettingsDialogController">
+
+    <buttonTypes>
+        <ButtonType fx:constant="OK" />
+        <ButtonType fx:constant="CANCEL" />
+    </buttonTypes>
+
+    <content>
+        <VBox spacing="12.0">
+            <padding>
+                <Insets top="15.0" right="15.0" bottom="15.0" left="15.0" />
+            </padding>
+
+            <children>
+                <CheckBox fx:id="showRankingsCheckBox"
+                          text="Show rankings and scores during game" />
+
+                <CheckBox fx:id="useTimerCheckBox"
+                          text="Use timer"
+                          onAction="#toggleTimerOptions" />
+
+                <HBox fx:id="timerOptionsBox"
+                      spacing="8.0"
+                      visible="false"
+                      managed="false">
+                    <children>
+                        <Label text="Minutes" />
+                        <Spinner fx:id="minutesSpinner" prefWidth="80.0" />
+                        <Label text="Seconds" />
+                        <Spinner fx:id="secondsSpinner" prefWidth="80.0" />
+                    </children>
+                </HBox>
+
+                <Label fx:id="errorLabel"
+                       textFill="red"
+                       visible="false" />
+            </children>
+        </VBox>
+    </content>
+</DialogPane>

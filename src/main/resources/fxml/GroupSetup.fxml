@@ -12,12 +12,8 @@
             <TextField fx:id="firstPlayerName" text="Player 1" />
          </children>
       </VBox>
-      <Button fx:id="startButton" layoutX="262.0" layoutY="346.0" mnemonicParsing="false" onAction="#handleStartButton" text="Start Game" />
-      <TextField fx:id="groupName" layoutX="225.0" layoutY="273.0" promptText="Group Name (optional)" />
-      <CheckBox fx:id="isTemporary" layoutX="225.0" layoutY="304.0" mnemonicParsing="false" prefHeight="15.0" prefWidth="149.0" selected="true" text="Set as Temporary Group">
-         <font>
-            <Font size="10.0" />
-         </font></CheckBox>
+      <Button fx:id="startButton" layoutX="455.0" layoutY="333.0" mnemonicParsing="false" onAction="#handleStartButton" text="Next: Game Settings" />
+      <TextField fx:id="groupName" layoutX="225.0" layoutY="273.0" promptText="Input your group name" />
       <VBox fx:id="playerThree" layoutX="99.0" layoutY="201.0" managed="false" prefHeight="42.0" prefWidth="149.0" visible="false">
          <children>
             <Label text="Player 3" />
@@ -48,10 +44,7 @@
       </Button>
       <Label fx:id="errorLabel" alignment="CENTER" layoutX="188.0" layoutY="369.0" prefHeight="17.0" prefWidth="222.0" textFill="#c90000" />
       <Button layoutX="28.0" layoutY="333.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
-      <CheckBox fx:id="isShowRankingsOn" layoutX="225.0" layoutY="326.0" mnemonicParsing="false" text="Show rankings and scores during a game">
-         <font>
-            <Font size="10.0" />
-         </font>
-      </CheckBox>
+      <Label layoutX="225.0" layoutY="256.0" text="Group Name (optional)" />
+      <CheckBox fx:id="isTemporary" layoutX="225.0" layoutY="309.0" mnemonicParsing="false" text="Temporary Group" />
    </children>
 </Pane>

@@ -8,6 +8,7 @@ import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
 
+import java.time.Duration;
 import java.util.*;
 
 public class GameService {
@@ -22,7 +23,6 @@ public class GameService {
     private RankingDTO currentRanking;
     private PlayerInGame previousPlayer;
     private Score previousScore;
-    private Boolean isLiveRankingDisplayOn;
 
     public GroupService groupService;
     public ScoreService scoreService;
@@ -40,33 +40,13 @@ public class GameService {
         rankingService = new RankingService();
     }
 
-    public void startGame(){
-        System.out.println();
-        System.out.println("--Start Refreshing Data--");
-        System.out.println();
-
-        scoreService.clearScores();
-        consecutiveZeroCount = 0;
-        currentTurnIndex = 1;
-
-        createNewGame();
-        currentGameID = currentGame.getGameID();
-    }
-
-    public void startGameWithNewGroup(List<String> names, boolean isTemporary) {
+    public void createNewCurrentGroup(List<String> names, boolean isTemporary) {
         currentGroup = groupService.createGroup(names, isTemporary);
-
-        List<Long> orderedIDs = currentGroup.getPlayers().stream()
-                .map(Player::getId)
-                .toList();
-
-        initializeGameWithOrderedIDs(orderedIDs);
-        startGame();
     }
 
-    public void startGameWithExistingGroup(List<Long> orderedIDs) {
+    public void startGameWithExistingGroup(List<Long> orderedIDs, GameSettings gameSettings) {
         initializeGameWithOrderedIDs(orderedIDs);
-        startGame();
+        startGame(gameSettings);
     }
 
     private void initializeGameWithOrderedIDs(List<Long> orderedIDs) {
@@ -87,11 +67,28 @@ public class GameService {
         currentGroup = groupService.getGroupByID(groupID);
     }
 
+    public void startGame(GameSettings gameSettings){
+        System.out.println();
+        System.out.println("--Start Refreshing Data--");
+        System.out.println();
+
+        scoreService.clearScores();
+        consecutiveZeroCount = 0;
+        currentTurnIndex = 1;
+
+        createNewGame(gameSettings);
+        currentGameID = currentGame.getGameID();
+    }
+
     // Separated from the method above, but does not have proper meaning of use yet
-    public void createNewGame(){
+    public void createNewGame(GameSettings gameSettings){
         // Delete this method if there's nothing more to add
-        currentGame = new Game(currentGroup);
+        currentGame = new Game(currentGroup, gameSettings);
         currentGame.setGameID(gameRepository.reserveId());
+    }
+
+    public void updateGameSettings(GameSettings newGameSettings){
+        currentGame.setSettings(newGameSettings);
     }
 
     private Map<Long, String> makeNameList() {
@@ -180,6 +177,7 @@ public class GameService {
 
     public void saveGame(){
         if(!currentGroup.isTemporary()){
+            // TODO: Check if the scores in Game entity and repository the same when ending a game
             currentGame.setScores(scoreService.getScores());
             gameRepository.save(currentGame);
 
@@ -212,15 +210,14 @@ public class GameService {
         if (trimmed.contains(" ")) {
             throw new ValidationException("Spaces are not allowed.");
         }
-        String normalised = trimmed;
 
-        int value = Integer.parseInt(normalised);
-        if (value < 0) {
-            throw new ValidationException("Score must be 0 or greater.");
+        if (!trimmed.matches("[0-9]+")) {
+            throw new ValidationException("Score must be a half-width integer.");
         }
 
-        if(!normalised.matches("\\d+")){
-            throw new ValidationException("Score must be integer");
+        int value = Integer.parseInt(trimmed);
+        if (value < 0) {
+            throw new ValidationException("Score must be 0 or greater.");
         }
 
         return value;
@@ -236,6 +233,17 @@ public class GameService {
 
         players.addAll(currentGroup.getPlayers());
         return players;
+    }
+
+    public void setLiveRankingEnabled(boolean enabled) {
+        ensureGameStarted();
+        currentGame.getSettings().setLiveRankingEnabled(enabled);
+    }
+
+    private void ensureGameStarted() {
+        if (currentGame == null) {
+            throw new IllegalStateException("Game has not started.");
+        }
     }
 
     public PlayerInGame getCurrentPlayer() {
@@ -266,11 +274,4 @@ public class GameService {
         return previousPlayer;
     }
 
-    public void setIsLiveRankingDisplayOn(boolean rankingOn){
-        isLiveRankingDisplayOn = rankingOn;
-    }
-
-    public Boolean getLiveRankingDisplayOn() {
-        return isLiveRankingDisplayOn;
-    }
 }

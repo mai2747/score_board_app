@@ -3,21 +3,28 @@ package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
 import com.scoreboard.app.Exception.ValidationException;
+import com.scoreboard.app.model.Game;
+import com.scoreboard.app.model.GameSettings;
 import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 
 public class ScoreInputController implements ContextAwareController{
@@ -38,7 +45,14 @@ public class ScoreInputController implements ContextAwareController{
 
     @FXML private Pane prevScorePane;
     @FXML private Pane currentRankingPane;
-    @FXML private VBox currentRankings;
+
+    @FXML Pane timerPane;
+    @FXML Label timerLabel;
+    @FXML ProgressBar timerBar;
+    @FXML Button timerToggleButton;
+    private Timeline timerTimeline;
+    private int remainingSeconds;
+    private int totalSeconds;
 
     private GameService gameService;
 
@@ -46,11 +60,12 @@ public class ScoreInputController implements ContextAwareController{
     public void setContext(AppContext context){
         this.gameService = context.gameService();
 
-        if(gameService.getLiveRankingDisplayOn()) currentRankingPane.setVisible(true);
-        updatePlayerDisplay();
-    }
-
-    public void onSceneReady(){
+        GameSettings gameSettings = gameService.getCurrentGame().getSettings();
+        if(gameSettings.isLiveRankingEnabled()) currentRankingPane.setVisible(true);
+        if(gameSettings.isTimerEnabled()){
+            timerPane.setVisible(true);
+            startTimer(gameSettings.getTimerSettings().getSeconds());
+        }
         updatePlayerDisplay();
     }
 
@@ -83,7 +98,9 @@ public class ScoreInputController implements ContextAwareController{
         }
 
         refreshLabels(scoreInField);
-        if(gameService.getLiveRankingDisplayOn()) updateRankingDisplay();
+        GameSettings gameSettings = gameService.getCurrentGame().getSettings();
+        if(gameSettings.isLiveRankingEnabled()) updateRankingDisplay();
+        if(gameSettings.isTimerEnabled()) restartTimer();
     }
 
     private void updatePlayerDisplay(){
@@ -142,7 +159,7 @@ public class ScoreInputController implements ContextAwareController{
             infoLabel.setVisible(true);
         }
 
-        if(gameService.getLiveRankingDisplayOn()) updateRankingDisplay();
+        if(gameService.getCurrentGame().getSettings().isLiveRankingEnabled()) updateRankingDisplay();
     }
 
     @FXML private void endGame(){
@@ -154,12 +171,166 @@ public class ScoreInputController implements ContextAwareController{
         }
     }
 
+    public void startTimer(int seconds) {
+        totalSeconds = seconds;
+        remainingSeconds = seconds;
 
-    public void setPlayerName(String name) {
-        playerNameLabel.setText(name);
+        timerTimeline = new Timeline(
+                new KeyFrame(Duration.seconds(1), e -> updateTimer())
+        );
+
+        timerTimeline.setCycleCount(seconds);
+        timerTimeline.play();
     }
 
-    public void setGameService(GameService gameService){
-        this.gameService = gameService;
+    @FXML
+    private void restartTimer() {
+        if (timerTimeline != null) {
+            timerTimeline.stop();
+        }
+        startTimer(totalSeconds);
+
+        //TODO: manually close menu?
     }
+
+    private void updateTimer() {
+        remainingSeconds--;
+
+        if (remainingSeconds < 0) {
+            remainingSeconds = 0;
+        }
+
+        timerLabel.setText(String.valueOf(remainingSeconds));
+        timerBar.setProgress(remainingSeconds / (double) totalSeconds);
+
+        if (remainingSeconds == 0) {
+            timerTimeline.stop();
+            // Display for prompt users to input score
+        }
+    }
+
+    public void applyUpdatedSettingsToScreen(){
+        GameSettings gameSettings = gameService.getCurrentGame().getSettings();
+
+        currentRankingPane.setVisible(gameSettings.isLiveRankingEnabled());
+
+        if(gameSettings.isTimerEnabled()) {
+            timerPane.setVisible(true);
+            totalSeconds = gameSettings.getTimerSettings().getSeconds();
+            restartTimer();
+        }else{
+            timerPane.setVisible(false);
+        }
+    }
+
+    @FXML
+    public void toggleTimer(){
+        if (timerTimeline == null) return;
+
+        if (timerTimeline.getStatus() == Animation.Status.RUNNING) {
+            timerTimeline.pause();
+        } else {
+            timerTimeline.play();
+        }
+
+        if (timerTimeline.getStatus() == Animation.Status.RUNNING) {
+            timerTimeline.pause();
+            timerToggleButton.setText("Resume");
+        } else {
+            timerTimeline.play();
+            timerToggleButton.setText("Pause");
+        }
+    }
+
+    @FXML
+    public void openGameMenu(){
+        toggleTimer();
+
+        // need to toggle timer again
+    }
+
+    @FXML
+    public void openGameSettingsDialog(){
+        try {
+            FXMLLoader loader = new FXMLLoader(
+                    getClass().getResource("src/main/resources/fxml/GameSettingDialog.fxml.fxml")
+            );
+
+            DialogPane dialogPane = loader.load();
+            GameSettingsDialogController controller = loader.getController();
+
+            controller.setGameService(gameService);
+            controller.loadCurrentSettings();
+
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Game Settings");
+            dialog.setDialogPane(dialogPane);
+
+            Optional<ButtonType> result = dialog.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.OK) {
+                try {
+                    GameSettings newSettings = controller.buildGameSettings();
+                    gameService.updateGameSettings(newSettings);
+                    applyUpdatedSettingsToScreen();
+                } catch (IllegalStateException e) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("Invalid Settings");
+                    alert.setHeaderText("Could not apply settings.");
+                    alert.setContentText(e.getMessage());
+                    alert.showAndWait();
+                }
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle("Error");
+            alert.setHeaderText("Could not open settings.");
+            alert.setContentText("Failed to load the settings dialog.");
+            alert.showAndWait();
+        }
+    }
+
+    @FXML
+    public void saveAndReturnHome(){
+        // Implemented in DB ver.
+    }
+
+    @FXML
+    public void quitGame(){
+        if(!gameService.scoreService.getScores().isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm");
+            alert.setHeaderText("Leave Game?");
+            alert.setContentText("Current game status will not be saved.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.CANCEL) {
+                return;
+            }
+        }
+        ViewManager.switchTo("Menu.fxml");
+    }
+
+    // will be deleted
+    @FXML public void backToHome(){
+        if(!gameService.scoreService.getScores().isEmpty()){
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Confirm");
+            alert.setHeaderText("Leave Game?");
+            alert.setContentText("Current game status will not be saved.");
+
+            Optional<ButtonType> result = alert.showAndWait();
+
+            if (result.isPresent() && result.get() == ButtonType.CANCEL) {
+                return;
+            }
+        }
+
+        ViewManager.switchTo("Menu.fxml");
+    }
+
 }

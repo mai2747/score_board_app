@@ -7,15 +7,15 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.ScoreInputController">
    <children>
-      <Button fx:id="submitButton" defaultButton="true" layoutX="274.0" layoutY="254.0" mnemonicParsing="false" onAction="#submitScore" text="Submit" />
-      <TextField fx:id="scoreField" layoutX="226.0" layoutY="200.0" promptText="Input your score" />
-      <Label fx:id="playerNameLabel" alignment="CENTER" layoutX="128.0" layoutY="133.0" prefHeight="39.0" prefWidth="345.0" textAlignment="CENTER">
+      <Button fx:id="submitButton" defaultButton="true" layoutX="373.0" layoutY="326.0" mnemonicParsing="false" onAction="#submitScore" text="Submit" />
+      <TextField fx:id="scoreField" layoutX="325.0" layoutY="272.0" promptText="Input your score" />
+      <Label fx:id="playerNameLabel" alignment="CENTER" layoutX="227.0" layoutY="205.0" prefHeight="39.0" prefWidth="345.0" textAlignment="CENTER">
          <font>
             <Font size="27.0" />
          </font></Label>
-      <Button layoutX="510.0" layoutY="339.0" mnemonicParsing="false" onAction="#endGame" text="End Game" />
-      <Label fx:id="errorLabel" alignment="CENTER" layoutX="123.0" layoutY="225.0" prefHeight="17.0" prefWidth="356.0" textAlignment="CENTER" textFill="#e25858" />
-      <Pane fx:id="prevScorePane" layoutX="29.0" layoutY="237.0" prefHeight="141.0" prefWidth="170.0">
+      <Button layoutX="515.0" layoutY="364.0" mnemonicParsing="false" onAction="#endGame" text="End Game" />
+      <Label fx:id="errorLabel" alignment="CENTER" layoutX="222.0" layoutY="244.0" prefHeight="17.0" prefWidth="356.0" textAlignment="CENTER" textFill="#e25858" />
+      <Pane fx:id="prevScorePane" layoutX="38.0" layoutY="207.0" prefHeight="141.0" prefWidth="170.0">
          <children>
             <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#1f93ff00" height="152.0" layoutX="-1.0" stroke="#dadada" strokeType="INSIDE" strokeWidth="5.0" width="170.0" />
             <Button fx:id="editScoreButton" layoutX="42.0" layoutY="113.0" mnemonicParsing="false" onAction="#editScore" prefHeight="25.0" prefWidth="84.0" text="Edit previous score">
@@ -29,7 +29,7 @@
             <Label fx:id="infoLabel" layoutX="7.0" layoutY="88.0" prefHeight="17.0" prefWidth="155.0" textFill="#c10000" />
          </children>
       </Pane>
-      <Pane fx:id="currentRankingPane" layoutX="28.0" layoutY="44.0" prefHeight="170.0" prefWidth="173.0" visible="false">
+      <Pane fx:id="currentRankingPane" layoutX="37.0" layoutY="14.0" prefHeight="170.0" prefWidth="173.0" visible="false">
          <children>
             <Label layoutX="10.0" layoutY="14.0" text="Current Ranking" />
             <VBox fx:id="currentRankings" layoutX="10.0" layoutY="42.0" prefHeight="120.0" prefWidth="100.0" spacing="10">
@@ -41,5 +41,22 @@
                </children>
             </VBox>
          </children></Pane>
+      <Button layoutX="12.0" layoutY="364.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
+      <HBox fx:id="timerPane" alignment="CENTER_LEFT" layoutX="252.0" layoutY="134.0" prefHeight="39.0" prefWidth="326.0" spacing="5">
+         <children>
+            <Label fx:id="timerLabel" text="Label" />
+            <ProgressBar fx:id="timerBar" prefWidth="200.0" progress="0.0" />
+            <Button fx:id="timerToggleButton" mnemonicParsing="false" onAction="#toggleTimer" prefHeight="10.0" prefWidth="50.0" text="Pause" />
+         </children>
+      </HBox>
+      <MenuButton layoutX="474.0" layoutY="32.0" mnemonicParsing="false" onAction="#openGameMenu" text="MenuButton">
+         <items>
+            <MenuItem onAction="#openGameSettingsDialog" text="Edit Game Settings..." />
+            <MenuItem onAction="#restartTimer" text="Restart timer" />
+            <SeparatorMenuItem />
+            <MenuItem onAction="#saveAndReturnHome" text="Save and Return Home" />
+            <MenuItem onAction="#quitGame" text="Quit Game" />
+         </items>
+      </MenuButton>
    </children>
 </AnchorPane>

@@ -1,6 +1,8 @@
 package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
+import com.scoreboard.app.model.GameSettings;
+import com.scoreboard.app.model.TimerSettings;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -72,9 +74,8 @@ public class GroupSetupController implements ContextAwareController{
         }
         System.out.println();
 
-        gameService.startGameWithNewGroup(playerNames, isTemporary.isSelected());
-        gameService.setIsLiveRankingDisplayOn(isShowRankingsOn.isSelected());
-        ViewManager.switchTo("ScoreInput.fxml");
+        gameService.createNewCurrentGroup(playerNames, isTemporary.isSelected());
+        ViewManager.switchTo("GameSetup.fxml");
     }
 
     private boolean addNameOrFail(List<String> list, TextField field) {

@@ -4,12 +4,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane fx:id="showRankingsCheckBox" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.GameSetupController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.GameSetupController">
    <children>
       <ListView fx:id="playerOrderListView" layoutX="127.0" layoutY="100.0" prefHeight="200.0" prefWidth="200.0" />
       <Button layoutX="479.0" layoutY="338.0" mnemonicParsing="false" onAction="#startGame" text="Start Game" />
       <Button layoutX="40.0" layoutY="338.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
-      <Label layoutX="51.0" layoutY="100.0" text="Reorder" />
+      <Label layoutX="131.0" layoutY="80.0" text="Edit playing order" />
       <Label layoutX="264.0" layoutY="40.0" prefHeight="48.0" prefWidth="148.0" text="Game Settings">
          <font>
             <Font size="21.0" />
@@ -17,6 +17,19 @@
       </Label>
       <Button layoutX="40.0" layoutY="149.0" mnemonicParsing="false" onAction="#moveUp" text="Up" />
       <Button layoutX="40.0" layoutY="213.0" mnemonicParsing="false" onAction="#moveDown" text="Down" />
-      <CheckBox fx:id="isShowRankingsOn" layoutX="354.0" layoutY="109.0" mnemonicParsing="false" text="Show rankings and scores during a game" />
+      <CheckBox fx:id="showRankingsCheckBox" layoutX="354.0" layoutY="109.0" mnemonicParsing="false" text="Show rankings and scores during a game" />
+      <VBox layoutX="354.0" layoutY="149.0" prefHeight="118.0" prefWidth="238.0" spacing="5">
+         <children>
+            <CheckBox fx:id="useTimerCheckBox" mnemonicParsing="false" onAction="#toggleTimerOptions" text="Set a timer" />
+            <HBox fx:id="timerOptionsBox" alignment="BOTTOM_RIGHT" prefHeight="26.0" prefWidth="251.0" spacing="10">
+               <children>
+                  <Spinner fx:id="minutesSpinner" prefHeight="25.0" prefWidth="87.0" />
+                  <Label text="m." />
+                  <Spinner fx:id="secondsSpinner" prefHeight="25.0" prefWidth="87.0" />
+                  <Label text="s." />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
    </children>
 </AnchorPane>
