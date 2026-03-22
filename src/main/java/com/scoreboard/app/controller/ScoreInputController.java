@@ -29,6 +29,7 @@ import java.util.Optional;
 
 public class ScoreInputController implements ContextAwareController{
 
+    @FXML public MenuItem resetTimerButton;
     @FXML private Label playerNameLabel;
     @FXML private TextField scoreField;
     @FXML private Label errorLabel;
@@ -53,6 +54,8 @@ public class ScoreInputController implements ContextAwareController{
     private Timeline timerTimeline;
     private int remainingSeconds;
     private int totalSeconds;
+    private int pauseRequests = 0;
+    private boolean wasRunningBeforePause = false;
 
     private GameService gameService;
 
@@ -81,6 +84,7 @@ public class ScoreInputController implements ContextAwareController{
                 javafx.beans.binding.Bindings.when(empty).then(tip).otherwise((javafx.scene.control.Tooltip) null)
         );
 
+        resetTimerButton.setVisible(false);
         prevScorePane.setVisible(false);
     }
 
@@ -167,7 +171,10 @@ public class ScoreInputController implements ContextAwareController{
         if (!scoreField.getText().isBlank()){
             errorLabel.setText("Please submit your score");
             errorLabel.setVisible(true);
-        }else {
+        }else if(gameService.scoreService.getScores().isEmpty()){
+            errorLabel.setText("The game hasn't started yet");
+            errorLabel.setVisible(true);
+        }else{
             ViewManager.switchTo("Result.fxml");
         }
     }
@@ -218,53 +225,74 @@ public class ScoreInputController implements ContextAwareController{
 
         currentRankingPane.setVisible(gameSettings.isLiveRankingEnabled());
 
-        if(gameSettings.isTimerEnabled()) {
-            timerPane.setVisible(true);
+        boolean timerEnabled = gameSettings.isTimerEnabled();
+
+        timerPane.setVisible(timerEnabled);
+        resetTimerButton.setVisible(timerEnabled);
+
+        if(timerEnabled) {
             totalSeconds = gameSettings.getTimerSettings().getSeconds();
             restartTimer();
-        }else{
-            timerPane.setVisible(false);
         }
     }
 
     @FXML
     public void toggleTimer(){
-        if (timerTimeline == null) return;
+        if (timerTimeline != null) {
+            boolean running = timerTimeline.getStatus() == Animation.Status.RUNNING;
 
-        boolean running = timerTimeline.getStatus() == Animation.Status.RUNNING;
-
-        if (running) {
-            timerTimeline.pause();
-        } else {
-            timerTimeline.play();
+            if (running) {
+                requestPause();
+            } else {
+                releasePause();
+            }
         }
-
-        timerToggleButton.setText(running ? "Resume" : "Pause");
     }
 
     @FXML
-    public void openGameMenu(){
-        toggleTimer();
+    private void requestPause() {
+        if (timerTimeline == null) return;
 
-        // need to toggle timer again
+        if (pauseRequests == 0 &&
+                timerTimeline.getStatus() == Animation.Status.RUNNING) {
+            wasRunningBeforePause = true;
+            timerTimeline.pause();
+            timerToggleButton.setText("Resume");
+        }
+
+        pauseRequests++;
+    }
+
+    @FXML
+    private void releasePause() {
+        if (timerTimeline == null) return;
+        if (pauseRequests > 0) pauseRequests--;
+
+        if (pauseRequests == 0 && wasRunningBeforePause) {
+            timerTimeline.play();
+            timerToggleButton.setText("Pause");
+            wasRunningBeforePause = false;
+        }
     }
 
     @FXML
     public void openGameSettingsDialog(){
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("src/main/resources/fxml/GameSettingDialog.fxml")
+                    getClass().getResource("/fxml/GameSettingDialog.fxml")
             );
 
             DialogPane dialogPane = loader.load();
             GameSettingsDialogController controller = loader.getController();
-
             controller.setGameService(gameService);
             controller.loadCurrentSettings();
 
             Dialog<ButtonType> dialog = new Dialog<>();
             dialog.setTitle("Game Settings");
             dialog.setDialogPane(dialogPane);
+
+            requestPause();
+            controller.setDialog(dialog);
 
             Optional<ButtonType> result = dialog.showAndWait();
 
@@ -290,6 +318,8 @@ public class ScoreInputController implements ContextAwareController{
             alert.setHeaderText("Could not open settings.");
             alert.setContentText("Failed to load the settings dialog.");
             alert.showAndWait();
+        }finally {
+            releasePause();
         }
     }
 
