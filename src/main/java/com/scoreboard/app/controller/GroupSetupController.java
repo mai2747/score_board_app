@@ -74,7 +74,7 @@ public class GroupSetupController implements ContextAwareController{
         }
         System.out.println();
 
-        gameService.createNewCurrentGroup(playerNames, isTemporary.isSelected());
+        gameService.createNewCurrentGroup(playerNames, groupName.getText(), isTemporary.isSelected());
         ViewManager.switchTo("GameSetup.fxml");
     }
 

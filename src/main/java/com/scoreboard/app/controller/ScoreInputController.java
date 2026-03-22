@@ -64,7 +64,8 @@ public class ScoreInputController implements ContextAwareController{
         if(gameSettings.isLiveRankingEnabled()) currentRankingPane.setVisible(true);
         if(gameSettings.isTimerEnabled()){
             timerPane.setVisible(true);
-            startTimer(gameSettings.getTimerSettings().getSeconds());
+            totalSeconds = gameSettings.getTimerSettings().getSeconds();
+            startTimer(totalSeconds);
         }
         updatePlayerDisplay();
     }
@@ -172,8 +173,9 @@ public class ScoreInputController implements ContextAwareController{
     }
 
     public void startTimer(int seconds) {
-        totalSeconds = seconds;
         remainingSeconds = seconds;
+
+        updateTimer();
 
         timerTimeline = new Timeline(
                 new KeyFrame(Duration.seconds(1), e -> updateTimer())
@@ -186,27 +188,29 @@ public class ScoreInputController implements ContextAwareController{
     @FXML
     private void restartTimer() {
         if (timerTimeline != null) {
-            timerTimeline.stop();
+            timerTimeline.stop();  // stop?
         }
-        startTimer(totalSeconds);
+        startTimer(totalSeconds);  // change to remainingSeconds ?
 
         //TODO: manually close menu?
     }
 
     private void updateTimer() {
-        remainingSeconds--;
+        int min = remainingSeconds / 60;
+        int sec = remainingSeconds % 60;
+        timerLabel.setText(String.format("%02d:%02d", min, sec));
+        timerBar.setProgress(remainingSeconds / (double) totalSeconds);
 
         if (remainingSeconds < 0) {
             remainingSeconds = 0;
         }
 
-        timerLabel.setText(String.valueOf(remainingSeconds));
-        timerBar.setProgress(remainingSeconds / (double) totalSeconds);
-
         if (remainingSeconds == 0) {
             timerTimeline.stop();
             // Display for prompt users to input score
         }
+
+        remainingSeconds--;
     }
 
     public void applyUpdatedSettingsToScreen(){
@@ -227,19 +231,15 @@ public class ScoreInputController implements ContextAwareController{
     public void toggleTimer(){
         if (timerTimeline == null) return;
 
-        if (timerTimeline.getStatus() == Animation.Status.RUNNING) {
+        boolean running = timerTimeline.getStatus() == Animation.Status.RUNNING;
+
+        if (running) {
             timerTimeline.pause();
         } else {
             timerTimeline.play();
         }
 
-        if (timerTimeline.getStatus() == Animation.Status.RUNNING) {
-            timerTimeline.pause();
-            timerToggleButton.setText("Resume");
-        } else {
-            timerTimeline.play();
-            timerToggleButton.setText("Pause");
-        }
+        timerToggleButton.setText(running ? "Resume" : "Pause");
     }
 
     @FXML
@@ -253,7 +253,7 @@ public class ScoreInputController implements ContextAwareController{
     public void openGameSettingsDialog(){
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("src/main/resources/fxml/GameSettingDialog.fxml.fxml")
+                    getClass().getResource("src/main/resources/fxml/GameSettingDialog.fxml")
             );
 
             DialogPane dialogPane = loader.load();

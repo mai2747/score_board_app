@@ -8,7 +8,6 @@ import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
 
-import java.time.Duration;
 import java.util.*;
 
 public class GameService {
@@ -40,8 +39,9 @@ public class GameService {
         rankingService = new RankingService();
     }
 
-    public void createNewCurrentGroup(List<String> names, boolean isTemporary) {
+    public void createNewCurrentGroup(List<String> names, String groupName, boolean isTemporary) {
         currentGroup = groupService.createGroup(names, isTemporary);
+        if(!groupName.isBlank()) currentGroup.setGroupName(groupName);
     }
 
     public void startGameWithExistingGroup(List<Long> orderedIDs, GameSettings gameSettings) {
