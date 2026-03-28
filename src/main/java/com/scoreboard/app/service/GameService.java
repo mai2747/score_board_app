@@ -48,7 +48,6 @@ public class GameService {
         createAndInitialiseGameState(enableTimer, timerSeconds);
         registerPlayersWithOrder(orderedIDs);
 
-        currentGame.setGameStatus("IN_PROGRESS");
     }
 
     public void createAndInitialiseGameState(boolean enableTimer, int timerSeconds){
@@ -202,6 +201,35 @@ public class GameService {
 
     public List<Score> getScores(){
         return scoreService.getScores(currentGame.getGameId());
+    }
+
+    public void startGame() {
+        changeGameStatus(GameStatus.IN_PROGRESS);
+    }
+
+    public void finishGame() {
+        changeGameStatus(GameStatus.FINISHED);
+    }
+
+    public void pauseGame() {
+        changeGameStatus(GameStatus.PAUSED);
+    }
+
+    public void resumeGame() {
+        changeGameStatus(GameStatus.IN_PROGRESS);
+    }
+
+    public void cancelGame() {
+        changeGameStatus(GameStatus.CANCELLED);
+    }
+
+    private void changeGameStatus(GameStatus newStatus) {
+        if (currentGame == null) {
+            throw new IllegalStateException("Current game is null");
+        }
+
+        currentGame.setGameStatus(newStatus);
+        gameRepository.updateStatus(currentGame.getGameId(), newStatus);
     }
 
     // Error handling: Score is null/negative/non-digit

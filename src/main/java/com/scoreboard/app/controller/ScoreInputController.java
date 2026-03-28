@@ -174,7 +174,7 @@ public class ScoreInputController implements ContextAwareController{
             System.out.println("** Game Finished **");
             System.out.println();
 
-
+            gameService.finishGame();
             ViewManager.switchTo("Result.fxml");
         }
     }
@@ -340,6 +340,8 @@ public class ScoreInputController implements ContextAwareController{
                 return;
             }
         }
+
+        gameService.cancelGame();
         ViewManager.switchTo("Menu.fxml");
     }
 

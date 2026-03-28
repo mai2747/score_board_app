@@ -1,6 +1,7 @@
 package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.Game;
+import com.scoreboard.app.model.GameStatus;
 import com.scoreboard.app.repository.GameRepository;
 
 import java.sql.*;
@@ -27,7 +28,7 @@ public class SqliteGameRepository implements GameRepository {
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
             stmt.setLong(1, game.getGroupId());
-            stmt.setString(2, game.getGameStatus());
+            stmt.setString(2, game.getGameStatus().name());
             stmt.setString(3, game.getGameRule());  // might be changed and used in future expansion
 
             stmt.executeUpdate();
@@ -49,6 +50,22 @@ public class SqliteGameRepository implements GameRepository {
     }
 
     @Override
+    public void updateStatus(Long gameId, GameStatus newStatus){
+        String sql = "UPDATE games SET status = ? WHERE game_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, newStatus.name());
+            stmt.setLong(2, gameId);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Update game status failed", e);
+        }
+    }
+
+    @Override
     public Optional<Game> findById(Long id) {
         String sql = "SELECT game_id, group_id, status, rule_version FROM games WHERE game_id = ?";
 
@@ -60,7 +77,7 @@ public class SqliteGameRepository implements GameRepository {
                     return Optional.of(new Game(
                             rs.getLong("game_id"),
                             rs.getLong("group_id"),
-                            rs.getString("status"),
+                            GameStatus.valueOf(rs.getString("status")),
                             rs.getString("rule_version")
                     ));
                 }
@@ -86,7 +103,7 @@ public class SqliteGameRepository implements GameRepository {
                     Game game = new Game(
                             rs.getLong("game_id"),
                             rs.getLong("group_id"),
-                            rs.getString("status"),
+                            GameStatus.valueOf(rs.getString("status")),
                             rs.getString("rule_version")
                     );
                     games.add(game);
