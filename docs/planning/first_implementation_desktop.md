@@ -51,7 +51,7 @@ Extend the desktop application to support score correction, live-updated gamepla
 - **R10**: Live-updated score and ranking display
 - **R11**: Game settings
 - **R15**: Pause and resume game
-- **R24**: Word-based score calculation
+- ~~**R24**: Word-based score calculation~~  // Relocated to Milestone 1.3 (22 Mar 2026)
 
 ### Out of Scope
 - Database persistence
@@ -78,6 +78,7 @@ Replace the in-memory repositories with a SQLite database to enable persistent d
 - **R12**: Score and ranking history visualization
 - **R13**: Score history comparison between players
 - **R14**: Management of past records (mainly deletion)
+- **R24**: Word-based score calculation
 
 ### Out of Scope
 - Could and Won’t requirements; R16–R23 (*)

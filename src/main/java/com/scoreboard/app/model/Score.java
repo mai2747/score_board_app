@@ -2,16 +2,15 @@ package com.scoreboard.app.model;
 
 public class Score {
     private Long scoreId;
-    private Long gameId;
-    private Long playerId;
+    private Long playerInGameId;
     private int turnNumber;   // 1手目、2手目…
     private int score;       // このターンで獲得した点
 
 
 
-    public Score(Long gameId, Long playerId, int turnNumber, int score){
-        this.gameId = gameId;
-        this.playerId = playerId;
+    public Score(Long scoreId, Long playerInGameId, int turnNumber, int score){
+        this.scoreId = scoreId;
+        this.playerInGameId = playerInGameId;
         this.turnNumber = turnNumber;
         this.score = score;
     }
@@ -22,12 +21,12 @@ public class Score {
 
     public Long getScoreId(){ return scoreId; }
 
-    public Long getGameId(){
-        return gameId;
+    public Long getPlayerInGameId() {
+        return playerInGameId;
     }
 
-    public Long getPlayerId() {
-        return playerId;
+    public int getTurnNumber() {
+        return turnNumber;
     }
 
     public int getScore() {

@@ -3,9 +3,7 @@ package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
 import com.scoreboard.app.Exception.ValidationException;
-import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.GameSettings;
-import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
@@ -17,11 +15,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
-import javafx.scene.layout.VBox;
 import javafx.util.Duration;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -171,10 +167,14 @@ public class ScoreInputController implements ContextAwareController{
         if (!scoreField.getText().isBlank()){
             errorLabel.setText("Please submit your score");
             errorLabel.setVisible(true);
-        }else if(gameService.scoreService.getScores().isEmpty()){
+        }else if(gameService.getScores().isEmpty()){
             errorLabel.setText("The game hasn't started yet");
             errorLabel.setVisible(true);
         }else{
+            System.out.println("** Game Finished **");
+            System.out.println();
+
+
             ViewManager.switchTo("Result.fxml");
         }
     }
@@ -198,8 +198,6 @@ public class ScoreInputController implements ContextAwareController{
             timerTimeline.stop();  // stop?
         }
         startTimer(totalSeconds);  // change to remainingSeconds ?
-
-        //TODO: manually close menu?
     }
 
     private void updateTimer() {
@@ -279,7 +277,7 @@ public class ScoreInputController implements ContextAwareController{
     public void openGameSettingsDialog(){
         try {
             FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/fxml/GameSettingDialog.fxml")
+                    getClass().getResource("/fxml/GameSettingsDialog.fxml")
             );
 
             DialogPane dialogPane = loader.load();
@@ -330,7 +328,7 @@ public class ScoreInputController implements ContextAwareController{
 
     @FXML
     public void quitGame(){
-        if(!gameService.scoreService.getScores().isEmpty()){
+        if(!gameService.getScores().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirm");
             alert.setHeaderText("Leave Game?");
@@ -342,24 +340,6 @@ public class ScoreInputController implements ContextAwareController{
                 return;
             }
         }
-        ViewManager.switchTo("Menu.fxml");
-    }
-
-    // will be deleted
-    @FXML public void backToHome(){
-        if(!gameService.scoreService.getScores().isEmpty()){
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setTitle("Confirm");
-            alert.setHeaderText("Leave Game?");
-            alert.setContentText("Current game status will not be saved.");
-
-            Optional<ButtonType> result = alert.showAndWait();
-
-            if (result.isPresent() && result.get() == ButtonType.CANCEL) {
-                return;
-            }
-        }
-
         ViewManager.switchTo("Menu.fxml");
     }
 

@@ -2,6 +2,7 @@ package com.scoreboard.app.service;
 
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.repository.ScoreRepository;
+import com.scoreboard.app.viewmodel.PlayerTotalScore;
 
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -13,26 +14,25 @@ public class ScoreService {
         this.scoreRepository = repo;
     }
 
-    // TODO: Plan well: Scores for temporary group are not required to record in repository
-    //       However recording to repo would be nicer in the aspect of pausing a game
-    public void addScore(Long gameId, Long playerId, int turnNumber, int point){
-        // scoreID can be omitted from Score object in the actual installation when switching to DB
-        // But still need to think about the chance of editing past score
-        Score score = new Score(gameId, playerId, turnNumber, point);
-
+   public void saveScore(Score score){
         scoreRepository.save(score);
     }
 
-    public void editPrevScore(Long id, int newScore){
-        scoreRepository.update(id, newScore);
+    public void editPrevScore(Score score, int newScore){
+        score.setScore(newScore);
+        scoreRepository.update(score);
     }
 
-    public List<Score> getScores(){
-        return scoreRepository.getScores();
+    public List<PlayerTotalScore> makePlayerTotalScores(Long gameId){
+        return scoreRepository.findPlayerTotalScoresByGameId(gameId);
     }
 
-    public void clearScores(){
-        scoreRepository.clearScores();
+    public List<Score> getScores(Long gameId){
+        return scoreRepository.findScoresByGameId(gameId);
+    }
+
+    public void clearGameScores(Long gameId){
+        scoreRepository.clearGameScores(gameId);
     }
 
     private Long generateDummyID(){

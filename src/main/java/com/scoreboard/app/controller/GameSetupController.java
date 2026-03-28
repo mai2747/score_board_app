@@ -1,11 +1,8 @@
 package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
-import com.scoreboard.app.model.GameSettings;
 import com.scoreboard.app.model.Player;
-import com.scoreboard.app.model.TimerSettings;
 import com.scoreboard.app.service.GameService;
-import com.scoreboard.app.service.GroupService;
 import com.scoreboard.app.view.ViewManager;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -13,10 +10,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
 
-import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
 
 public class GameSetupController implements ContextAwareController{
     @FXML private ListView<Player> playerOrderListView;
@@ -96,22 +91,20 @@ public class GameSetupController implements ContextAwareController{
                 .map(Player::getId)
                 .toList();
 
-        TimerSettings timerSettings;
+        int totalSeconds;
 
         if (useTimerCheckBox.isSelected()) {
-            int totalSeconds = minutesSpinner.getValue() * 60 + secondsSpinner.getValue();
+            totalSeconds = minutesSpinner.getValue() * 60 + secondsSpinner.getValue();
             if (totalSeconds <= 0) {
                 // showValidationError("Please set at least 1 second.");
                 return;
             }
-            timerSettings = TimerSettings.ofSeconds(totalSeconds);
         } else {
-            timerSettings = TimerSettings.off();
+            totalSeconds = 0;
         }
 
-        GameSettings gameSettings = new GameSettings(showRankingsCheckBox.isSelected(), timerSettings);
+        gameService.createAndStartGame(orderedPlayerIds, showRankingsCheckBox.isSelected(), totalSeconds);
 
-        gameService.startGameWithExistingGroup(orderedPlayerIds, gameSettings);
         ViewManager.switchTo("ScoreInput.fxml");
     }
 

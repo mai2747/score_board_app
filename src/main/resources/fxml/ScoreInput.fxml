@@ -13,7 +13,6 @@
          <font>
             <Font size="27.0" />
          </font></Label>
-      <Button layoutX="515.0" layoutY="364.0" mnemonicParsing="false" onAction="#endGame" text="End Game" />
       <Label fx:id="errorLabel" alignment="CENTER" layoutX="222.0" layoutY="214.0" prefHeight="17.0" prefWidth="356.0" textAlignment="CENTER" textFill="#e25858" />
       <Pane fx:id="prevScorePane" layoutX="38.0" layoutY="207.0" prefHeight="141.0" prefWidth="170.0">
          <children>
@@ -41,7 +40,6 @@
                </children>
             </VBox>
          </children></Pane>
-      <Button layoutX="12.0" layoutY="364.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
       <HBox fx:id="timerPane" alignment="CENTER_LEFT" layoutX="252.0" layoutY="104.0" prefHeight="39.0" prefWidth="326.0" spacing="5" visible="false">
          <children>
             <Label fx:id="timerLabel" text="Label" />
@@ -49,7 +47,7 @@
             <Button fx:id="timerToggleButton" mnemonicParsing="false" onAction="#toggleTimer" prefHeight="10.0" prefWidth="50.0" text="Pause" />
          </children>
       </HBox>
-      <MenuButton layoutX="474.0" layoutY="32.0" mnemonicParsing="false" onShowing="#requestPause" onHidden="#releasePause" text="MenuButton">
+      <MenuButton layoutX="474.0" layoutY="32.0" mnemonicParsing="false" onHidden="#releasePause" onShowing="#requestPause" text="MenuButton">
          <items>
             <MenuItem onAction="#openGameSettingsDialog" text="Edit Game Settings..." />
             <MenuItem fx:id="resetTimerButton" onAction="#restartTimer" text="Restart timer" visible="false" />
@@ -58,5 +56,6 @@
             <MenuItem onAction="#quitGame" text="Quit Game" />
          </items>
       </MenuButton>
+      <Button layoutX="502.0" layoutY="348.0" mnemonicParsing="false" onAction="#endGame" text="End Game" />
    </children>
 </AnchorPane>

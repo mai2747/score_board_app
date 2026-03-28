@@ -25,7 +25,7 @@ public class InMemoryGameRepository implements GameRepository {
         this.groupRepository = groupRepository;
     }
 
-    @Override
+
     public Long reserveId(){
         return seq.getAndIncrement();
     }
@@ -34,8 +34,9 @@ public class InMemoryGameRepository implements GameRepository {
     public Game save(Game game) {
         if (game == null) throw new IllegalArgumentException("game is null");
 
-        Group group = game.getGroup();
-        if (group == null) throw new IllegalArgumentException("game.group is null");
+        Long groupId = game.getGroupId();
+        Group group = groupRepository.findById(groupId)
+                .orElseThrow(() -> new IllegalArgumentException("Group not found: " + groupId));;
 
         // Insert/update players in advance to fill their IDs
         if (group.getPlayers() != null) {
@@ -46,11 +47,7 @@ public class InMemoryGameRepository implements GameRepository {
         }
 
         // Insert/update group to fill ID
-        if (group.getGroupID() == null) {
-            groupRepository.save(group);
-        } else {
-            groupRepository.save(group);
-        }
+        groupRepository.save(group);
 
         // Insert/update game
         if (game.getGameID() == null) {
@@ -60,13 +57,13 @@ public class InMemoryGameRepository implements GameRepository {
         return game;
     }
 
-    // Debug method
-    public int getStoredDataNum(){
-        return store.size();
+    @Override
+    public Optional<Game> findById(Long id) {
+        return Optional.of(store.get(id));
     }
 
     @Override
-    public Optional<Game> findById(Long id) {
-        return Optional.ofNullable(store.get(id));
+    public List<Game> findAll() {
+        return (List<Game>) store.values();
     }
 }

@@ -9,6 +9,7 @@ public class Group {
     private Long groupID;
     private String name;          // グループ名
     private boolean isTemporary;    // 一時グループかどうか（Must要件7,8対策）
+    private String createdAt;
     private List<Player> players;
     private List<Game> games;
 
@@ -17,7 +18,17 @@ public class Group {
     public Group(List<Player> players, boolean isTemporary){
         this.players = players;
         this.isTemporary = isTemporary;
-        name = "Group [" + LocalDateTime.now().format(formatter) + "]" ;  // Default name
+        createdAt = LocalDateTime.now().format(formatter);
+        name = "Group [" + createdAt + "]" ;  // Default name
+    }
+
+    public Group(Long groupID, String name, boolean isTemporary, String createdAt) {
+        this.groupID = groupID;
+        this.name = name;
+        this.isTemporary = isTemporary;
+        this.createdAt = createdAt;
+        this.players = new ArrayList<>();
+        this.games = new ArrayList<>();
     }
 
     public void setGroupName(String groupName){
@@ -59,4 +70,6 @@ public class Group {
     public List<Player> getPlayers() {
         return players;
     }
+
+    public String getCreatedTime(){ return createdAt; }
 }

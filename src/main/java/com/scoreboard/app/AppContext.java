@@ -1,33 +1,37 @@
 package com.scoreboard.app;
 
 import com.scoreboard.app.repository.*;
-import com.scoreboard.app.repository.memory.InMemoryGameRepository;
-import com.scoreboard.app.repository.memory.InMemoryGroupRepository;
-import com.scoreboard.app.repository.memory.InMemoryPlayerRepository;
-import com.scoreboard.app.repository.memory.InMemoryScoreRepository;
+//import com.scoreboard.app.repository.memory.InMemoryGameRepository;
+//import com.scoreboard.app.repository.memory.InMemoryGroupRepository;
+//import com.scoreboard.app.repository.memory.InMemoryPlayerRepository;
+//import com.scoreboard.app.repository.memory.InMemoryScoreRepository;
+import com.scoreboard.app.repository.sqlite.*;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.service.GroupService;
 import com.scoreboard.app.service.ScoreService;
+
+import java.sql.Connection;
 
 public final class AppContext {
     private final PlayerRepository playerRepository;
     private final GroupRepository groupRepository;
     private final GameRepository gameRepository;
     private final ScoreRepository scoreRepository;
+    private final PlayerInGameRepository pigRepository;
 
     private final ScoreService scoreService;
     private final GroupService groupService;
     private final GameService gameService;
 
-    public AppContext() {
-        // アプリ全体で共有したいものをここでnew
-        this.scoreRepository = new InMemoryScoreRepository();
-        this.playerRepository = new InMemoryPlayerRepository();
-        this.groupRepository = new InMemoryGroupRepository(playerRepository);  // Should it contain playerRepository?
-        this.gameRepository = new InMemoryGameRepository(playerRepository, groupRepository);
+    public AppContext(Connection conn) {
+        this.scoreRepository = new SqliteScoreRepository(conn);
+        this.playerRepository = new SqlitePlayerRepository(conn);
+        this.groupRepository = new SqliteGroupRepository(conn);
+        this.gameRepository = new SqliteGameRepository(conn);
+        this.pigRepository = new SqlitePlayerInGameRepository(conn);
 
         this.scoreService = new ScoreService(scoreRepository);
-        this.groupService = new GroupService(playerRepository, groupRepository);
+        this.groupService = new GroupService(playerRepository, groupRepository, pigRepository);
         this.gameService = new GameService(scoreService, groupService, gameRepository);
     }
 

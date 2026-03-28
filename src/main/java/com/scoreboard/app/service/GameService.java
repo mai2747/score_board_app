@@ -4,6 +4,7 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
+import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
@@ -11,12 +12,10 @@ import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import java.util.*;
 
 public class GameService {
-    private List<PlayerInGame> playersInGame;      // Player list containing turn order
-    private List<PlayerInGame> playersInTurnOrder; // Ordered player list
+    private List<PlayerInGame> orderedPlayersInGame;
     private Map<Long, String> nameByPlayerID;
 
     private Game currentGame;
-    private Long currentGameID;
     private Group currentGroup;
     private PlayerInGame currentPlayer;
     private RankingDTO currentRanking;
@@ -39,59 +38,61 @@ public class GameService {
         rankingService = new RankingService();
     }
 
-    public void createNewCurrentGroup(List<String> names, String groupName, boolean isTemporary) {
+    public void createNewGroup(List<String> names, String groupName, boolean isTemporary) {
         currentGroup = groupService.createGroup(names, isTemporary);
         if(!groupName.isBlank()) currentGroup.setGroupName(groupName);
+        groupService.saveGroup(currentGroup);
     }
 
-    public void startGameWithExistingGroup(List<Long> orderedIDs, GameSettings gameSettings) {
-        initializeGameWithOrderedIDs(orderedIDs);
-        startGame(gameSettings);
+    public void createAndStartGame(List<Long> orderedIDs, boolean enableTimer, int timerSeconds) {
+        createAndInitialiseGameState(enableTimer, timerSeconds);
+        registerPlayersWithOrder(orderedIDs);
+
+        currentGame.setGameStatus("IN_PROGRESS");
     }
 
-    private void initializeGameWithOrderedIDs(List<Long> orderedIDs) {
-        playerNum = orderedIDs.size();
-
-        playersInGame = groupService.makePlayerList(currentGroup, orderedIDs);
-        playersInTurnOrder = groupService.getOrderedPlayers(playersInGame);
-        currentPlayer = playersInTurnOrder.get(0);
-        nameByPlayerID = makeNameList();
-
-        System.out.println("Current Player -> " + currentPlayer);
-        for (PlayerInGame pig : playersInTurnOrder) {
-            System.out.println("PIG: playerId=" + pig.getPlayerId() + ", order=" + pig.getTurnOrder());
-        }
-    }
-
-    public void selectGroup(Long groupID){
-        currentGroup = groupService.getGroupByID(groupID);
-    }
-
-    public void startGame(GameSettings gameSettings){
+    public void createAndInitialiseGameState(boolean enableTimer, int timerSeconds){
         System.out.println();
         System.out.println("--Start Refreshing Data--");
         System.out.println();
 
-        scoreService.clearScores();
         consecutiveZeroCount = 0;
         currentTurnIndex = 1;
 
-        createNewGame(gameSettings);
-        currentGameID = currentGame.getGameID();
+        GameSettings gameSettings = createNewGameSettings(enableTimer, timerSeconds);
+
+        currentGame = new Game(currentGroup.getGroupID(), gameSettings);
+        gameRepository.save(currentGame);
     }
 
-    // Separated from the method above, but does not have proper meaning of use yet
-    public void createNewGame(GameSettings gameSettings){
-        // Delete this method if there's nothing more to add
-        currentGame = new Game(currentGroup, gameSettings);
-        currentGame.setGameID(gameRepository.reserveId());
+    private void registerPlayersWithOrder(List<Long> orderedIDs) {
+        orderedPlayersInGame = groupService.registerPlayersInGame(currentGroup, currentGame.getGameId(), orderedIDs);
+        playerNum = orderedIDs.size();
+        currentPlayer = orderedPlayersInGame.get(0);
+        nameByPlayerID = createPlayerNameMap();
+
+        for (PlayerInGame pig : orderedPlayersInGame) {
+            System.out.println("PIG: playerId=" + pig.getPlayerId() + ", order=" + pig.getTurnOrder());
+        }
+    }
+
+    public GameSettings createNewGameSettings(boolean enableTimer, int timerSeconds){
+        TimerSettings timerSettings;
+
+        if(timerSeconds > 0){
+            timerSettings = TimerSettings.ofSeconds(timerSeconds);
+        }else{
+            timerSettings = TimerSettings.off();
+        }
+
+        return new GameSettings(enableTimer, timerSettings);
     }
 
     public void updateGameSettings(GameSettings newGameSettings){
         currentGame.setSettings(newGameSettings);
     }
 
-    private Map<Long, String> makeNameList() {
+    private Map<Long, String> createPlayerNameMap() {
         Map<Long, String> nameByID = new HashMap<>();
 
         for (Player player : currentGroup.getPlayers()) {
@@ -101,9 +102,12 @@ public class GameService {
         return nameByID;
     }
 
+    public void selectGroup(Long groupID){
+        currentGroup = groupService.getGroupById(groupID);
+    }
+
     public void submitScore(String scoreInField) throws ValidationException {
         int input = parseAndValidate(scoreInField);
-        Long playerId = currentPlayer.getPlayerId();
 
         System.out.println("Score submitted: " + input);
 
@@ -112,7 +116,8 @@ public class GameService {
             return;
         }
 
-        scoreService.addScore(currentGameID, playerId, currentTurnIndex, input);
+        Score score = new Score(null, currentPlayer.getPigId(), currentTurnIndex, input);
+        scoreService.saveScore(score);
         afterScoreChanged(true);
 
         advanceTurn();
@@ -129,18 +134,19 @@ public class GameService {
         }
 
         System.out.println("PrevScore ID: " + previousScore.getScoreId());
-        scoreService.editPrevScore(previousScore.getScoreId(), input);
+        scoreService.editPrevScore(previousScore, input);
         afterScoreChanged(false);
     }
 
     private void afterScoreChanged(boolean useLastScoreAsPrevious) {
-        List<Score> scores = scoreService.getScores();
+        List<Score> scores = scoreService.getScores(currentGame.getGameId());
 
         if (useLastScoreAsPrevious && !scores.isEmpty()) {
             previousScore = scores.get(scores.size() - 1);
         }
 
-        currentRanking = rankingService.buildRanking(currentGameID, scores, nameByPlayerID);
+        List<PlayerTotalScore> playerTotalScores = scoreService.makePlayerTotalScores(currentGame.getGameId());
+        currentRanking = rankingService.buildRanking(currentGame.getGameId(), playerTotalScores);
     }
 
     private void endGame() {
@@ -169,31 +175,33 @@ public class GameService {
 
     public void advanceTurn() {
         previousPlayer = currentPlayer;
-        currentPlayer = playersInTurnOrder.get(currentTurnIndex++ % playerNum);
+        currentPlayer = orderedPlayersInGame.get(currentTurnIndex++ % playerNum);
 
         System.out.println("Next player is " + nameByPlayerID.get(currentPlayer.getPlayerId()));
         System.out.println();
     }
 
-    public void saveGame(){
+    public void printGameInfoLog(){
         if(!currentGroup.isTemporary()){
             // TODO: Check if the scores in Game entity and repository the same when ending a game
-            currentGame.setScores(scoreService.getScores());
-            gameRepository.save(currentGame);
+            currentGame.setScores(scoreService.getScores(currentGame.getGameId()));
 
-            Group group = currentGame.getGroup();
+            Long groupId = currentGame.getGroupId();
+            Group group = groupService.getGroupById(groupId);
             System.out.println("Saved this game");
             System.out.println();
-            System.out.println("GameID: " + currentGame.getGameID() + "\n" +
+            System.out.println("GameID: " + currentGame.getGameId() + "\n" +
                     "GroupID: " + group.getGroupID() + "\n" +
                     "Group Name: " + group.getGroupName() + "\n" +
                     "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
             for(Player p: group.getPlayers()){
                 System.out.println(p.getName() + " ID:" + p.getId());
             }
-
-            System.out.println("Stored data number -> " + gameRepository.getStoredDataNum());
         }
+    }
+
+    public List<Score> getScores(){
+        return scoreService.getScores(currentGame.getGameId());
     }
 
     // Error handling: Score is null/negative/non-digit
@@ -235,11 +243,6 @@ public class GameService {
         return players;
     }
 
-    public void setLiveRankingEnabled(boolean enabled) {
-        ensureGameStarted();
-        currentGame.getSettings().setLiveRankingEnabled(enabled);
-    }
-
     private void ensureGameStarted() {
         if (currentGame == null) {
             throw new IllegalStateException("Game has not started.");
@@ -256,10 +259,6 @@ public class GameService {
 
     public List<RankingEntryDTO> getCurrentRanking(){
         return currentRanking.entries();
-    }
-
-    public List<PlayerInGame> getPlayersInGame() {
-        return playersInGame;
     }
 
     public Group getCurrentGroup(){

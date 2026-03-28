@@ -1,11 +1,12 @@
 package com.scoreboard.app.repository;
 
 import com.scoreboard.app.model.Game;
+
+import java.util.List;
 import java.util.Optional;
 
 public interface GameRepository {
     Game save(Game game);
     Optional<Game> findById(Long id);
-    Long reserveId();
-    int getStoredDataNum(); // For Debugging
+    List<Game> findAll();
 }

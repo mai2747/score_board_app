@@ -41,4 +41,9 @@ public class InMemoryPlayerRepository implements PlayerRepository {
                 .filter(player -> name.equals(player.getName()))
                 .findFirst();
     }
+
+    // Update should be implemented  * if id is null -> insert, else update
+    @Override
+    public void update(Player player) {
+    }
 }

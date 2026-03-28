@@ -32,7 +32,7 @@ public class ResultController implements ContextAwareController{
         this.gameService = context.gameService();
 
         renderRanking();
-        gameService.saveGame();
+        gameService.printGameInfoLog();
     }
 
     @FXML

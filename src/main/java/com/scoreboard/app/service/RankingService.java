@@ -1,5 +1,6 @@
 package com.scoreboard.app.service;
 
+import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import com.scoreboard.app.model.Score;
@@ -8,50 +9,40 @@ import java.util.*;
 
 public class RankingService {
 
-    // TODO: Fix even result to show the same ranking
-    public RankingDTO buildRanking(Long gameID, List<Score> scores, Map<Long, String> nameByPlayerId){
-        // Sum up scores for each player
-        Map<Long, Integer> totalByPlayer = new HashMap<>();
-        for (Score s : scores) {
-            if (s == null) continue;
-            Long playerID = s.getPlayerId();
-            if (playerID == null) continue;
-
-            int value = s.getScore();
-            totalByPlayer.merge(playerID, value, Integer::sum); //なん
-        }
-
-        // Sort totalByPlayer by scores
-        List<Map.Entry<Long, Integer>> sorted = new ArrayList<>(totalByPlayer.entrySet());
+    public RankingDTO buildRanking(Long gameId, List<PlayerTotalScore> totals) {
+        List<PlayerTotalScore> sorted = new ArrayList<>(totals);
         sorted.sort(
-                Comparator.<Map.Entry<Long, Integer>>comparingInt(e -> e.getValue())
+                Comparator.<PlayerTotalScore>comparingInt(PlayerTotalScore::totalScore)
                         .reversed()
-                        .thenComparing(e -> nameByPlayerId.getOrDefault(e.getKey(), ""), String.CASE_INSENSITIVE_ORDER)
-                        .thenComparing(e -> e.getKey())
+                        .thenComparing(t -> t.playerName() == null ? "" : t.playerName(), String.CASE_INSENSITIVE_ORDER)
+                        .thenComparing(PlayerTotalScore::playerId)
         );
 
-        // Build ranking
+        List<RankingEntryDTO> entries = getRankingEntryDTOS(sorted);
+
+        return new RankingDTO(gameId, entries);
+    }
+
+    private static List<RankingEntryDTO> getRankingEntryDTOS(List<PlayerTotalScore> sorted) {
         List<RankingEntryDTO> entries = new ArrayList<>();
         int rank = 0;
         int sameRankCount = 0;
         Integer prevScore = null;
 
-        for (int i = 0; i < sorted.size(); i++) {
-            Long playerId = sorted.get(i).getKey();
-            int total = sorted.get(i).getValue();
+        for (PlayerTotalScore row : sorted) {
+            int total = row.totalScore();
 
             if (prevScore == null || total != prevScore) {
-                rank = rank + 1 + sameRankCount;      // dense ranking increments when score changes
+                rank = rank + 1 + sameRankCount;
                 sameRankCount = 0;
                 prevScore = total;
-            }else{
+            } else {
                 sameRankCount++;
             }
 
-            String name = nameByPlayerId.getOrDefault(playerId, "(unknown)");
-            entries.add(new RankingEntryDTO(rank, playerId, name, total));
-            System.out.println(name + "'s score: " + total + "| Rank." + rank);
+            String name = row.playerName() == null ? "(unknown)" : row.playerName();
+            entries.add(new RankingEntryDTO(rank, row.playerId(), name, total));
         }
-        return new RankingDTO(gameID, entries);
+        return entries;
     }
 }

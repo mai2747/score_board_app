@@ -4,37 +4,44 @@ import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.repository.GroupRepository;
+import com.scoreboard.app.repository.PlayerInGameRepository;
 import com.scoreboard.app.repository.PlayerRepository;
 
 import java.util.*;
 
 public class GroupService {
 
-    private PlayerRepository playerRepository;
-    private GroupRepository groupRepository;
+    private final PlayerRepository playerRepository;
+    private final GroupRepository groupRepository;
+    private final PlayerInGameRepository pigRepository;
 
-    public GroupService(PlayerRepository playerRepository, GroupRepository groupRepository) {
+    public GroupService(PlayerRepository playerRepository, GroupRepository groupRepository, PlayerInGameRepository pigRepository) {
         this.playerRepository = playerRepository;
         this.groupRepository = groupRepository;
+        this.pigRepository = pigRepository;
     }
 
     public Group createGroup(List<String> names, boolean isTemporary){
         System.out.println("Creating new group");
         List<Player> players = new ArrayList<>();
 
-        int playerNum = names.size();
-        for(int i = 0; i < playerNum; i++){
-            String playerName = names.get(i);
-            Player p = new Player(playerName);
-            p.setId(playerRepository.reserveId());
-            players.add(p);
-            //playerRepository.save(p);
+        for (String playerName : names) {
+            players.add(new Player(playerName));
         }
 
         return new Group(players, isTemporary);
     }
 
-    public List<PlayerInGame> makePlayerList(Group currentGroup, List<Long> orderedPlayerIDs) {
+    public void saveGroup(Group group) {
+        groupRepository.save(group);  // Generate group ID and save it in player entities
+
+        for (Player player : group.getPlayers()) {
+            player.setGroupId(group.getGroupID());
+            playerRepository.save(player);
+        }
+    }
+
+    public List<PlayerInGame> registerPlayersInGame(Group currentGroup, Long gameId, List<Long> orderedPlayerIDs) {
         List<PlayerInGame> playersInGame = new ArrayList<>();
 
         List<Long> groupPlayerIds = currentGroup.getPlayers().stream()
@@ -48,22 +55,20 @@ public class GroupService {
                         "Player does not belong to current group. playerID=" + playerID
                 );
             }
-
-            playersInGame.add(new PlayerInGame(currentGroup.getGroupID(), playerID, order++));
+            // TODO: save&getId then create new object??
+            PlayerInGame pig = new PlayerInGame(null, gameId, playerID, order++);
+            pigRepository.save(pig);
+            playersInGame.add(pig);
         }
 
         return playersInGame;
     }
 
-    public List<PlayerInGame> getOrderedPlayers(List<PlayerInGame> playersInGame){
-        return playersInGame.stream().sorted(Comparator.comparingInt(PlayerInGame::getTurnOrder)).toList();
+    public Group getGroupById(Long groupID){
+        return groupRepository.findById(groupID).orElseThrow();
     }
 
-    public Group getGroupByID(Long groupID){
-        return groupRepository.findById(groupID);
-    }
-
-    public List<Group> getAllGroup(){
+    public List<Group> getAllGroups(){
         return groupRepository.findAll();
     }
 }

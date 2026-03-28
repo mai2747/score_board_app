@@ -1,7 +1,7 @@
 # Scrabble Score Board
 
 ⚠️ This project is currently under active development.  
-The current implementation focuses on **Milestone 1.2: Enhanced Gameplay and Visualisation**.
+The current implementation focuses on **Milestone 1.3: Database Integration and History Management**.
 
 ---
 
@@ -38,9 +38,9 @@ This project follows a specification-driven development process.
 
 ---
 
-## Current Implementation (Milestone 1.2: Enhanced Gameplay and Visualization)
+## Current Implementation (Milestone 1.3: Database Integration and History Management)
 
-Milestone 1.2 expands the core gameplay system with score editing, visualization, and basic player/group management. <br>
+Milestone 1.3 introduces a database to enable users to view game history and edit group data. <br>
 The following features are implemented:
 
 ### Score Management

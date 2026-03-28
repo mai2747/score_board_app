@@ -1,8 +1,6 @@
 package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
-import com.scoreboard.app.model.GameSettings;
-import com.scoreboard.app.model.TimerSettings;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -74,7 +72,7 @@ public class GroupSetupController implements ContextAwareController{
         }
         System.out.println();
 
-        gameService.createNewCurrentGroup(playerNames, groupName.getText(), isTemporary.isSelected());
+        gameService.createNewGroup(playerNames, groupName.getText(), isTemporary.isSelected());
         ViewManager.switchTo("GameSetup.fxml");
     }
 

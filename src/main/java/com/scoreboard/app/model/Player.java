@@ -12,6 +12,12 @@ public class Player {
         this.name = name;
     }
 
+    public Player(Long playerId, Long groupId, String name){
+        this.playerID = playerId;
+        this.groupId = groupId;
+        this.name = name;
+    }
+
     public Long getId() { return playerID; }
     public void setId(Long id) { this.playerID = id; } // Should be used by repository（package-private）
 

@@ -33,12 +33,9 @@ public class InMemoryGroupRepository implements GroupRepository {
     }
 
     @Override
-    public Group findById(Long id) {
+    public Optional<Group> findById(Long id) {
         Group group = store.get(id);
-        if (group == null) {
-            throw new IllegalArgumentException("Group not found: " + id);
-        }
-        return group;
+        return Optional.ofNullable(group);
     }
 
     public List<Group> findAll(){

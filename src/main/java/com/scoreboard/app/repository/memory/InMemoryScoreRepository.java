@@ -2,6 +2,7 @@ package com.scoreboard.app.repository.memory;
 
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.repository.ScoreRepository;
+import com.scoreboard.app.viewmodel.PlayerTotalScore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +22,25 @@ public class InMemoryScoreRepository implements ScoreRepository {
     }
 
     @Override
-    public List<Score> findByGameId(Long gameId) {
+    public void update(Score score){
+        scores.stream()
+                .filter(s -> s.getScoreId().equals(score.getScoreId()))
+                .findFirst()
+                .ifPresent(s -> s.setScore(score.getScore()));
+        System.out.println("Score's updated in the Memory");
+    }
+
+    @Override
+    public List<Score> findScoresByGameId(Long gameId) {
         return scores.stream()
-                .filter(s -> s.getGameId().equals(gameId))
+                .filter(s -> s.getGameId().equals(gameId)) // getGameId() is deleted while switching to DB
                 .collect(Collectors.toList());
+    }
+
+    // For SQLite ver.
+    @Override
+    public List<PlayerTotalScore> findPlayerTotalScoresByGameId(Long gameId) {
+        return List.of();
     }
 
     @Override
@@ -35,15 +51,6 @@ public class InMemoryScoreRepository implements ScoreRepository {
                 .orElseThrow(() -> new IllegalArgumentException("Score not found: " + scoreId));
     }
 
-    @Override
-    public void update(Long id, int newScore){
-        scores.stream()
-                .filter(s -> s.getScoreId().equals(id))
-                .findFirst()
-                .ifPresent(s -> s.setScore(newScore));
-        System.out.println("Score's updated in the Memory");
-    }
-
     // Get scores to make ranking
     @Override
     public List<Score> getScores(){
@@ -51,7 +58,7 @@ public class InMemoryScoreRepository implements ScoreRepository {
     }
 
     @Override
-    public void clearScores(){
+    public void clearGameScores(Long gameId){
         scores.clear();
     }
 

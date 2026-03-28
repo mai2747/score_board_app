@@ -35,7 +35,7 @@ public class ChartViewController implements ContextAwareController{
 
         configureAxes();
 
-        List<Score> scores = gameService.scoreService.getScores();
+        List<Score> scores = gameService.getScores();
         if (scores == null || scores.isEmpty()) {
             return;
         }
@@ -45,7 +45,7 @@ public class ChartViewController implements ContextAwareController{
         Map<Long, Integer> turnCountMap = new LinkedHashMap<>();
 
         for (Score score : scores) {
-            Long playerId = score.getPlayerId();
+            Long playerId = score.getPlayerInGameId();
 
             XYChart.Series<Number, Number> series = seriesMap.computeIfAbsent(playerId, id -> {
                 XYChart.Series<Number, Number> s = new XYChart.Series<>();

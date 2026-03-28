@@ -28,7 +28,7 @@ public class GroupSelectController implements ContextAwareController{
     }
 
     public void putGroupList() {
-        groups = FXCollections.observableArrayList(groupService.getAllGroup());
+        groups = FXCollections.observableArrayList(groupService.getAllGroups());
 
         groupListView.setItems(groups);
 
@@ -53,7 +53,6 @@ public class GroupSelectController implements ContextAwareController{
 
     @FXML
     public void selectGroup(){
-        // グループ取得、できたらプレイヤー名表示も含む。のちにリストでの表示。
         Group selected = groupListView.getSelectionModel().getSelectedItem();
         gameService.selectGroup(selected.getGroupID());
 
