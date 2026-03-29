@@ -10,6 +10,7 @@ import com.scoreboard.app.db.DatabaseInitialiser;
 
 public class App extends Application {
     private Connection conn;
+    private AppContext context;
 
     @Override
     public void start(Stage stage) {
@@ -19,15 +20,17 @@ public class App extends Application {
             DatabaseInitialiser.initialise(conn);
 
             // Instantiate controller and repo
-            AppContext context = new AppContext(conn);
+            context = new AppContext(conn);
+
+            context.gameService().pauseRemainingInProgressGames();
 
             // Pass main stage to ViewManager
             ViewManager.setStage(stage);
             ViewManager.setContext(context);
             ViewManager.switchTo("GroupSetup.fxml");
 
-            stage.setTitle("Scrabble Score Calculator");
-            stage.show();
+//            stage.setTitle("Scrabble Score Calculator");
+//            stage.show();
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize database", e);
         }
@@ -35,6 +38,10 @@ public class App extends Application {
 
     @Override
     public void stop() throws Exception {
+        if (context != null) {
+            context.gameService().pauseCurrentGameIfInProgress();
+        }
+
         if (conn != null && !conn.isClosed()) {
             conn.close();
         }

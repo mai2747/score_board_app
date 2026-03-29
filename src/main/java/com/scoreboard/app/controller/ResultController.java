@@ -39,8 +39,6 @@ public class ResultController implements ContextAwareController{
     private void initialize() {
         rankLabels = List.of(firstRank, secondRank, thirdRank, fourthRank);
         scoreLabels = List.of(firstScore, secondScore, thirdScore, fourthScore);
-
-        // endingPhrase.setText("Results");
     }
 
     private void renderRanking() {
@@ -79,6 +77,7 @@ public class ResultController implements ContextAwareController{
 
     @FXML
     public void backToHome(){
+        gameService.handleTemporaryGroup();
         ViewManager.switchTo("Menu.fxml");
     }
 }

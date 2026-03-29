@@ -5,6 +5,7 @@ import com.scoreboard.app.repository.ScoreRepository;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class ScoreService {
@@ -25,6 +26,10 @@ public class ScoreService {
 
     public List<PlayerTotalScore> makePlayerTotalScores(Long gameId){
         return scoreRepository.findPlayerTotalScoresByGameId(gameId);
+    }
+
+    public Optional<Score> findLatestByGameId(Long gameId){
+        return scoreRepository.findLatestByGameId(gameId);
     }
 
     public List<Score> getScores(Long gameId){

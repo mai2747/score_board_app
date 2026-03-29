@@ -1,10 +1,12 @@
 PRAGMA foreign_keys = ON;
 
 CREATE TABLE IF NOT EXISTS groups (
-group_id      INTEGER PRIMARY KEY AUTOINCREMENT,
-name          TEXT NOT NULL,
-is_temporary  INTEGER NOT NULL DEFAULT 0 CHECK (is_temporary IN (0, 1)),
-created_at    TEXT NOT NULL
+group_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+name            TEXT NOT NULL,
+is_temporary    INTEGER NOT NULL DEFAULT 0 CHECK (is_temporary IN (0, 1)),
+status          TEXT NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE')),
+created_at      TEXT NOT NULL,
+last_played_at TEXT
 );
 
 CREATE TABLE IF NOT EXISTS players (

@@ -1,6 +1,7 @@
 package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.Group;
+import com.scoreboard.app.model.GroupStatus;
 import com.scoreboard.app.repository.GroupRepository;
 
 import java.sql.*;
@@ -25,21 +26,22 @@ public class SqliteGroupRepository implements GroupRepository {
             long generatedId = insert(group);
             group.setGroupID(generatedId);
         }else{
-            update(group);
+            throw new RuntimeException("Group ID is null");
         }
 
         return group;
     }
 
     private long insert(Group group){
-        String sql = "INSERT INTO groups (name, is_temporary, created_at) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO groups (name, is_temporary, status, created_at) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement stmt =
                      conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, group.getGroupName());
             stmt.setInt(2, group.isTemporary() ? 1 : 0);
-            stmt.setString(3, group.getCreatedTime());
+            stmt.setString(3, group.getStatus().name());
+            stmt.setString(4, group.getCreatedTime());
 
             stmt.executeUpdate();
 
@@ -56,17 +58,59 @@ public class SqliteGroupRepository implements GroupRepository {
         }
     }
 
-    private void update(Group group){
+    public void rename(Long groupId, String newName){
         String sql = "UPDATE groups SET name = ? WHERE group_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
-            stmt.setString(1, group.getGroupName());
-            stmt.setLong(2, group.getGroupID());
+            stmt.setString(1, newName);
+            stmt.setLong(2, groupId);
 
             stmt.executeUpdate();
 
         }catch(SQLException e){
-            throw new RuntimeException("Update group failed", e);
+            throw new RuntimeException("Update group name failed", e);
+        }
+    }
+
+    public void updateStatus(Long groupId, GroupStatus status){
+        String sql = "UPDATE groups SET status = ? WHERE group_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1, status.name());
+            stmt.setLong(2, groupId);
+
+            stmt.executeUpdate();
+
+        }catch(SQLException e){
+            throw new RuntimeException("Update group status failed", e);
+        }
+    }
+
+    public void updateLastPlayedAt(Long groupId, String lastPlayedAt){
+        String sql = "UPDATE groups SET last_played_at = ? WHERE group_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1, lastPlayedAt);
+            stmt.setLong(2, groupId);
+
+            stmt.executeUpdate();
+
+        }catch(SQLException e){
+            throw new RuntimeException("Update last played date failed", e);
+        }
+    }
+
+    @Override
+    public void delete(Long groupId) {
+        String sql = "DELETE FROM groups WHERE group_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setLong(1, groupId);
+
+            stmt.executeUpdate();
+
+        }catch (SQLException e){
+            throw new RuntimeException("Delete group failed", e);
         }
     }
 
@@ -126,5 +170,25 @@ public class SqliteGroupRepository implements GroupRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Find all groups failed", e);
         }
+    }
+
+    @Override
+    public String getGroupNameByGameId(Long gameId) {
+        String sql = "SELECT name FROM groups WHERE game_id = ?";
+
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, gameId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+
+                if (rs.next()) {
+                    return rs.getString("name");
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Find all groups failed", e);
+        }
+        return null;
     }
 }

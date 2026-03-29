@@ -28,8 +28,8 @@ public class GameService {
     public GameRepository gameRepository;
 
     public int currentTurnIndex = 1;
-    private int playerNum;
     private int consecutiveZeroCount = 0;
+    private int playerNum;
 
     public GameService(ScoreService scoreService, GroupService groupService, GameRepository gameRepository){
         this.scoreService = scoreService;
@@ -40,14 +40,58 @@ public class GameService {
 
     public void createNewGroup(List<String> names, String groupName, boolean isTemporary) {
         currentGroup = groupService.createGroup(names, isTemporary);
+
+        System.out.println("Creating new group");
+
         if(!groupName.isBlank()) currentGroup.setGroupName(groupName);
         groupService.saveGroup(currentGroup);
+    }
+
+    public void selectGroup(Long groupID){
+        currentGroup = groupService.getGroupById(groupID);
     }
 
     public void createAndStartGame(List<Long> orderedIDs, boolean enableTimer, int timerSeconds) {
         createAndInitialiseGameState(enableTimer, timerSeconds);
         registerPlayersWithOrder(orderedIDs);
 
+        activateGroup();
+    }
+
+    public void prepareAndResumeGame(Long gameId){
+        // set current Game/Group
+        currentGame = gameRepository.findById(gameId).orElseThrow();
+        currentGroup = groupService.getGroupById(currentGame.getGroupId());
+        playerNum = currentGroup.getPlayers().size();
+        nameByPlayerID = createPlayerNameMap();
+
+        // dummy
+        if(currentGame.getGameRule().matches("DEFAULT")){
+            currentGame.setSettings(createNewGameSettings(false, 0));
+        }
+
+        resumeGame();
+
+        // Set consecutiveZeroCount & currentTurnIndex & currentPlayer
+        orderedPlayersInGame = groupService.findPlayersByGameId(gameId);
+        previousScore = scoreService.findLatestByGameId(gameId).orElse(null); // need to be nullable
+
+        if (previousScore != null) {
+            currentTurnIndex = previousScore.getTurnNumber() + 1;
+
+            previousPlayer = groupService.findPlayerByPigId(previousScore.getPlayerInGameId()).orElseThrow();
+
+            int prevIndex = orderedPlayersInGame.indexOf(previousPlayer);
+            int nextIndex = (prevIndex + 1) % playerNum;
+
+            currentPlayer = orderedPlayersInGame.get(nextIndex);
+
+        } else {
+            // For paused game without any score input
+            currentTurnIndex = 1;
+            previousPlayer = null;
+            currentPlayer = orderedPlayersInGame.get(0);
+        }
     }
 
     public void createAndInitialiseGameState(boolean enableTimer, int timerSeconds){
@@ -99,10 +143,6 @@ public class GameService {
         }
 
         return nameByID;
-    }
-
-    public void selectGroup(Long groupID){
-        currentGroup = groupService.getGroupById(groupID);
     }
 
     public void submitScore(String scoreInField) throws ValidationException {
@@ -185,30 +225,39 @@ public class GameService {
             // TODO: Check if the scores in Game entity and repository the same when ending a game
             currentGame.setScores(scoreService.getScores(currentGame.getGameId()));
 
-            Long groupId = currentGame.getGroupId();
-            Group group = groupService.getGroupById(groupId);
+            Group group = groupService.getGroupById(currentGame.getGroupId());
             System.out.println("Saved this game");
             System.out.println();
-            System.out.println("GameID: " + currentGame.getGameId() + "\n" +
+            System.out.println("Group Name: " + group.getGroupName() + "\n" +
                     "GroupID: " + group.getGroupID() + "\n" +
-                    "Group Name: " + group.getGroupName() + "\n" +
+                    "GameID: " + currentGame.getGameId() + "\n" +
                     "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
             for(Player p: group.getPlayers()){
-                System.out.println(p.getName() + " ID:" + p.getId());
+                System.out.println(p.getName() + " (id " + p.getId() +")");
             }
         }
     }
 
-    public List<Score> getScores(){
-        return scoreService.getScores(currentGame.getGameId());
+    public void handleTemporaryGroup(){
+        if(currentGroup.isTemporary()){
+            groupService.deleteGroup(currentGroup.getGroupID());
+        }
     }
 
-    public void startGame() {
-        changeGameStatus(GameStatus.IN_PROGRESS);
+    public void pauseCurrentGameIfInProgress(){
+        if(currentGame != null && currentGame.getGameStatus() == GameStatus.IN_PROGRESS){
+            pauseGame();
+        }
+    }
+
+    // Replace IN_PROGRESS to PAUSED in case an app crashed and remaining IN_PROGRESS status
+    public void pauseRemainingInProgressGames() {
+        gameRepository.updateStatusByCurrentStatus(GameStatus.IN_PROGRESS, GameStatus.PAUSED);
     }
 
     public void finishGame() {
         changeGameStatus(GameStatus.FINISHED);
+        groupService.updateLastPlayedAt(currentGroup.getGroupID());
     }
 
     public void pauseGame() {
@@ -221,6 +270,14 @@ public class GameService {
 
     public void cancelGame() {
         changeGameStatus(GameStatus.CANCELLED);
+
+        Long groupId = currentGame.getGroupId();
+        gameRepository.delete(currentGame.getGameId());
+
+        long remaining = gameRepository.countByGroupId(groupId);
+        if (remaining == 0) {
+            draftGroup();
+        }
     }
 
     private void changeGameStatus(GameStatus newStatus) {
@@ -230,6 +287,23 @@ public class GameService {
 
         currentGame.setGameStatus(newStatus);
         gameRepository.updateStatus(currentGame.getGameId(), newStatus);
+    }
+
+    public void activateGroup() {
+        changeGroupStatus(GroupStatus.ACTIVE);
+    }
+
+    public void draftGroup() {
+        changeGroupStatus(GroupStatus.DRAFT);
+    }
+
+    private void changeGroupStatus(GroupStatus newStatus) {
+        if (currentGame == null) {
+            throw new IllegalStateException("Current game is null");
+        }
+
+        currentGroup.setStatus(newStatus);
+        groupService.updateStatus(currentGroup.getGroupID(), newStatus);
     }
 
     // Error handling: Score is null/negative/non-digit
@@ -259,8 +333,34 @@ public class GameService {
         return value;
     }
 
+    public List<Score> getScores(){
+        return scoreService.getScores(currentGame.getGameId());
+    }
+
     public String getPlayerNameByID(Long id){
         return nameByPlayerID.getOrDefault(id, "Unknown Player");
+    }
+
+    public boolean hasPausedGame() {
+        return gameRepository.existsByStatus(GameStatus.PAUSED);
+    }
+
+    // Assume at most one paused game exists
+    public Game getPausedGame() {
+        List<Game> pausedGames = gameRepository.findAllByStatus(GameStatus.PAUSED);
+        return pausedGames.isEmpty() ? null : pausedGames.get(0);
+    }
+
+    public List<PlayerTotalScore> makePlayerTotalScores(Long gameId){
+        return groupService.findPlayerTotalScoreByGameId(gameId);
+    }
+
+    public String getGroupNameByGameId(Long gameId){
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow();
+        Long groupId = game.getGroupId();
+
+        return groupService.getGroupNameByGroupId(groupId);
     }
 
     // Return should be String/List<Player>/Group???
@@ -269,12 +369,6 @@ public class GameService {
 
         players.addAll(currentGroup.getPlayers());
         return players;
-    }
-
-    private void ensureGameStarted() {
-        if (currentGame == null) {
-            throw new IllegalStateException("Game has not started.");
-        }
     }
 
     public PlayerInGame getCurrentPlayer() {
@@ -287,10 +381,6 @@ public class GameService {
 
     public List<RankingEntryDTO> getCurrentRanking(){
         return currentRanking.entries();
-    }
-
-    public Group getCurrentGroup(){
-        return currentGroup;
     }
 
     public Score getPrevScore(){

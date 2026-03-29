@@ -15,7 +15,6 @@ import javafx.scene.control.ListView;
 public class GroupSelectController implements ContextAwareController{
     @FXML private ListView<Group> groupListView;
     private ObservableList<Group> groups;
-    private ObservableList<Player> players;
 
     private GameService gameService;
     private GroupService groupService;

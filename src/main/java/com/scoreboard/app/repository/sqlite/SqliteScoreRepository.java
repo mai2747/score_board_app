@@ -7,6 +7,7 @@ import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class SqliteScoreRepository implements ScoreRepository {
     private final Connection conn;
@@ -90,6 +91,38 @@ public class SqliteScoreRepository implements ScoreRepository {
 
         }catch (SQLException e){
             throw new RuntimeException("Delete scores by game id failed", e);
+        }
+    }
+
+    @Override
+    public Optional<Score> findLatestByGameId(Long gameId) {
+        String sql = """
+                    SELECT s.score_id, s.player_in_game_id, s.turn_number, s.score
+                    FROM scores s
+                    JOIN players_in_game pig
+                      ON s.player_in_game_id = pig.player_in_game_id
+                    WHERE pig.game_id = ?
+                    ORDER BY s.turn_number DESC, s.score_id DESC
+                    LIMIT 1
+                    """;
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, gameId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    Score score = new Score(
+                            rs.getLong("score_id"),
+                            rs.getLong("player_in_game_id"),
+                            rs.getInt("turn_number"),
+                            rs.getInt("score")
+                    );
+                    return Optional.of(score);
+                }
+                return Optional.empty();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Find latest score by game id failed", e);
         }
     }
 

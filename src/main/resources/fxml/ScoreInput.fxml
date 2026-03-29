@@ -47,7 +47,7 @@
             <Button fx:id="timerToggleButton" mnemonicParsing="false" onAction="#toggleTimer" prefHeight="10.0" prefWidth="50.0" text="Pause" />
          </children>
       </HBox>
-      <MenuButton layoutX="474.0" layoutY="32.0" mnemonicParsing="false" onHidden="#releasePause" onShowing="#requestPause" text="MenuButton">
+      <MenuButton layoutX="474.0" layoutY="32.0" mnemonicParsing="false" onHidden="#releasePausedTimer" onShowing="#requestPauseTimer" text="MenuButton">
          <items>
             <MenuItem onAction="#openGameSettingsDialog" text="Edit Game Settings..." />
             <MenuItem fx:id="resetTimerButton" onAction="#restartTimer" text="Restart timer" visible="false" />

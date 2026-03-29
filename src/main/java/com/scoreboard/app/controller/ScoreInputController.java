@@ -171,9 +171,6 @@ public class ScoreInputController implements ContextAwareController{
             errorLabel.setText("The game hasn't started yet");
             errorLabel.setVisible(true);
         }else{
-            System.out.println("** Game Finished **");
-            System.out.println();
-
             gameService.finishGame();
             ViewManager.switchTo("Result.fxml");
         }
@@ -240,15 +237,15 @@ public class ScoreInputController implements ContextAwareController{
             boolean running = timerTimeline.getStatus() == Animation.Status.RUNNING;
 
             if (running) {
-                requestPause();
+                requestPauseTimer();
             } else {
-                releasePause();
+                releasePausedTimer();
             }
         }
     }
 
     @FXML
-    private void requestPause() {
+    private void requestPauseTimer() {
         if (timerTimeline == null) return;
 
         if (pauseRequests == 0 &&
@@ -262,7 +259,7 @@ public class ScoreInputController implements ContextAwareController{
     }
 
     @FXML
-    private void releasePause() {
+    private void releasePausedTimer() {
         if (timerTimeline == null) return;
         if (pauseRequests > 0) pauseRequests--;
 
@@ -289,7 +286,7 @@ public class ScoreInputController implements ContextAwareController{
             dialog.setTitle("Game Settings");
             dialog.setDialogPane(dialogPane);
 
-            requestPause();
+            requestPauseTimer();
             controller.setDialog(dialog);
 
             Optional<ButtonType> result = dialog.showAndWait();
@@ -317,13 +314,16 @@ public class ScoreInputController implements ContextAwareController{
             alert.setContentText("Failed to load the settings dialog.");
             alert.showAndWait();
         }finally {
-            releasePause();
+            releasePausedTimer();
         }
     }
 
     @FXML
     public void saveAndReturnHome(){
-        // Implemented in DB ver.
+        gameService.pauseGame();
+        toggleTimer();
+
+        ViewManager.switchTo("Menu.fxml");
     }
 
     @FXML

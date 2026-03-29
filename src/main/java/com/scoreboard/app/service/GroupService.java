@@ -1,12 +1,16 @@
 package com.scoreboard.app.service;
 
 import com.scoreboard.app.model.Group;
+import com.scoreboard.app.model.GroupStatus;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.repository.GroupRepository;
 import com.scoreboard.app.repository.PlayerInGameRepository;
 import com.scoreboard.app.repository.PlayerRepository;
+import com.scoreboard.app.viewmodel.PlayerTotalScore;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class GroupService {
@@ -15,6 +19,8 @@ public class GroupService {
     private final GroupRepository groupRepository;
     private final PlayerInGameRepository pigRepository;
 
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
     public GroupService(PlayerRepository playerRepository, GroupRepository groupRepository, PlayerInGameRepository pigRepository) {
         this.playerRepository = playerRepository;
         this.groupRepository = groupRepository;
@@ -22,7 +28,6 @@ public class GroupService {
     }
 
     public Group createGroup(List<String> names, boolean isTemporary){
-        System.out.println("Creating new group");
         List<Player> players = new ArrayList<>();
 
         for (String playerName : names) {
@@ -64,11 +69,53 @@ public class GroupService {
         return playersInGame;
     }
 
+    public void updateStatus(Long groupId, GroupStatus status){
+        groupRepository.updateStatus(groupId, status);
+    }
+
+    public void updateLastPlayedAt(Long groupId){
+        String lastPlayedAt = LocalDateTime.now().format(formatter);
+        groupRepository.updateLastPlayedAt(groupId, lastPlayedAt);
+    }
+
+    public void deleteGroup(Long groupId){
+        groupRepository.delete(groupId);
+    }
+
     public Group getGroupById(Long groupID){
-        return groupRepository.findById(groupID).orElseThrow();
+        Group group = groupRepository.findById(groupID).orElseThrow();
+        List<Player> players = playerRepository.findByGroupId(group.getGroupID());
+        group.setPlayers(players);
+
+        return group;
+    }
+
+    public String getGroupNameByGroupId(Long groupId){
+        return groupRepository.findById(groupId)
+                .map(Group::getGroupName)
+                .orElse("(Unknown Group)");
+    }
+
+    public List<PlayerTotalScore> findPlayerTotalScoreByGameId(Long gameId){
+        return pigRepository.findPlayerTotalScoreByGameId(gameId);
+    }
+
+    public List<PlayerInGame> findPlayersByGameId(Long gameId){
+        return pigRepository.findPlayersByGameId(gameId);
+    }
+
+    public Optional<PlayerInGame> findPlayerByPigId(Long pigId) {
+        return pigRepository.findById(pigId);
     }
 
     public List<Group> getAllGroups(){
-        return groupRepository.findAll();
+        List<Group> groups = groupRepository.findAll();
+
+        for (Group group : groups) {
+            List<Player> players = playerRepository.findByGroupId(group.getGroupID());
+            group.setPlayers(players);
+        }
+
+        return groups;
     }
 }

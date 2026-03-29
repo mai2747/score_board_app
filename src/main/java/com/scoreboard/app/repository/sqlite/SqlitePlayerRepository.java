@@ -1,9 +1,12 @@
 package com.scoreboard.app.repository.sqlite;
 
+import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.repository.PlayerRepository;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class SqlitePlayerRepository implements PlayerRepository {
@@ -78,11 +81,11 @@ public class SqlitePlayerRepository implements PlayerRepository {
     // TODO: No usage for methods below? -> delete if not needed
 
     @Override
-    public Optional<Player> findById(Long id) {
+    public Optional<Player> findByPlayerId(Long playerId) {
         String sql = "SELECT player_id, group_id, display_name FROM players WHERE player_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setLong(1, id);
+            stmt.setLong(1, playerId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -96,6 +99,36 @@ public class SqlitePlayerRepository implements PlayerRepository {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Find player by id failed", e);
+        }
+    }
+
+    @Override
+    public List<Player> findByGroupId(Long groupId){
+        String sql = "SELECT player_id, group_id, display_name FROM players WHERE group_id = ?";
+
+        List<Player> players = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setLong(1, groupId);
+
+             try (ResultSet rs = stmt.executeQuery()) {
+
+                 while (rs.next()) {
+
+                     Player player = new Player(
+                             rs.getLong("player_id"),
+                             rs.getLong("group_id"),
+                             rs.getString("display_name")
+                     );
+
+                     players.add(player);
+                 }
+
+                 return players;
+             }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Find players in a group failed", e);
         }
     }
 

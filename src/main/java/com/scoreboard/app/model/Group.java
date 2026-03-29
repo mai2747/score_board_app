@@ -8,7 +8,8 @@ import java.util.List;
 public class Group {
     private Long groupID;
     private String name;          // グループ名
-    private boolean isTemporary;    // 一時グループかどうか（Must要件7,8対策）
+    private boolean isTemporary;
+    private GroupStatus status;
     private String createdAt;
     private List<Player> players;
     private List<Game> games;
@@ -18,6 +19,7 @@ public class Group {
     public Group(List<Player> players, boolean isTemporary){
         this.players = players;
         this.isTemporary = isTemporary;
+        status = GroupStatus.DRAFT;
         createdAt = LocalDateTime.now().format(formatter);
         name = "Group [" + createdAt + "]" ;  // Default name
     }
@@ -55,10 +57,6 @@ public class Group {
         return playerIds;
     }
 
-    public void setAsTemporaryGroup(){
-        isTemporary = true;
-    }
-
     public boolean isTemporary(){
         return isTemporary;
     }
@@ -70,6 +68,10 @@ public class Group {
     public List<Player> getPlayers() {
         return players;
     }
+
+    public void setStatus(GroupStatus status){ this.status = status; }
+
+    public GroupStatus getStatus() { return status; }
 
     public String getCreatedTime(){ return createdAt; }
 }
