@@ -25,8 +25,9 @@ import java.util.Optional;
 
 public class ScoreInputController implements ContextAwareController{
 
-    @FXML public MenuItem resetTimerButton;
+    @FXML private MenuItem resetTimerButton;
     @FXML private Label playerNameLabel;
+    @FXML private Label turnNumberLabel;
     @FXML private TextField scoreField;
     @FXML private Label errorLabel;
     @FXML private Button submitButton;
@@ -54,19 +55,22 @@ public class ScoreInputController implements ContextAwareController{
     private boolean wasRunningBeforePause = false;
 
     private GameService gameService;
+    private GameSettings gameSettings;
 
     @Override
     public void setContext(AppContext context){
         this.gameService = context.gameService();
 
-        GameSettings gameSettings = gameService.getCurrentGame().getSettings();
+        gameSettings = gameService.getCurrentGame().getSettings();
         if(gameSettings.isLiveRankingEnabled()) currentRankingPane.setVisible(true);
         if(gameSettings.isTimerEnabled()){
             timerPane.setVisible(true);
             totalSeconds = gameSettings.getTimerSettings().getSeconds();
             startTimer(totalSeconds);
         }
+
         updatePlayerDisplay();
+        refreshOptionalSettings();
     }
 
     @FXML
@@ -99,9 +103,7 @@ public class ScoreInputController implements ContextAwareController{
         }
 
         refreshLabels(scoreInField);
-        GameSettings gameSettings = gameService.getCurrentGame().getSettings();
-        if(gameSettings.isLiveRankingEnabled()) updateRankingDisplay();
-        if(gameSettings.isTimerEnabled()) restartTimer();
+        refreshOptionalSettings();
     }
 
     private void updatePlayerDisplay(){
@@ -142,6 +144,11 @@ public class ScoreInputController implements ContextAwareController{
         prevScorePane.setVisible(true);
         prevScoreField.setText(scoreInField);
         scoreField.clear();
+    }
+
+    private void refreshOptionalSettings(){
+        if(gameSettings.isLiveRankingEnabled()) updateRankingDisplay();
+        if(gameSettings.isTimerEnabled()) restartTimer();
     }
 
     @FXML private void editScore(){
@@ -216,8 +223,6 @@ public class ScoreInputController implements ContextAwareController{
     }
 
     public void applyUpdatedSettingsToScreen(){
-        GameSettings gameSettings = gameService.getCurrentGame().getSettings();
-
         currentRankingPane.setVisible(gameSettings.isLiveRankingEnabled());
 
         boolean timerEnabled = gameSettings.isTimerEnabled();
@@ -227,8 +232,9 @@ public class ScoreInputController implements ContextAwareController{
 
         if(timerEnabled) {
             totalSeconds = gameSettings.getTimerSettings().getSeconds();
-            restartTimer();
         }
+
+        refreshOptionalSettings();
     }
 
     @FXML
@@ -295,6 +301,7 @@ public class ScoreInputController implements ContextAwareController{
                 try {
                     GameSettings newSettings = controller.buildGameSettings();
                     gameService.updateGameSettings(newSettings);
+                    gameSettings = gameService.getCurrentGame().getSettings();
                     applyUpdatedSettingsToScreen();
                 } catch (IllegalStateException e) {
                     Alert alert = new Alert(Alert.AlertType.WARNING);
@@ -336,7 +343,7 @@ public class ScoreInputController implements ContextAwareController{
 
             Optional<ButtonType> result = alert.showAndWait();
 
-            if (result.isPresent() && result.get() == ButtonType.CANCEL) {
+            if (result.isEmpty() || result.get() != ButtonType.OK) {
                 return;
             }
         }

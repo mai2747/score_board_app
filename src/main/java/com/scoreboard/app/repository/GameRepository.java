@@ -10,10 +10,10 @@ public interface GameRepository {
     Game save(Game game);
     void updateStatus(Long gameId, GameStatus newStatus);
     long countByGroupId(Long groupId);
-    void delete(Long gameId);
-    Optional<Game> findById(Long id);
+    void deleteByGameId(Long gameId);
+    void deleteByStatus(GameStatus status);
+    Optional<Game> findById(Long gameId);
     List<Game> findAll();
-
     List<Game> findAllByStatus(GameStatus status);
 
     boolean existsByStatus(GameStatus status);

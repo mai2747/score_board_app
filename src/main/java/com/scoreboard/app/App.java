@@ -27,7 +27,7 @@ public class App extends Application {
             // Pass main stage to ViewManager
             ViewManager.setStage(stage);
             ViewManager.setContext(context);
-            ViewManager.switchTo("GroupSetup.fxml");
+            ViewManager.switchTo("Menu.fxml");
 
 //            stage.setTitle("Scrabble Score Calculator");
 //            stage.show();
@@ -39,7 +39,7 @@ public class App extends Application {
     @Override
     public void stop() throws Exception {
         if (context != null) {
-            context.gameService().pauseCurrentGameIfInProgress();
+            context.gameService().cleanDb();
         }
 
         if (conn != null && !conn.isClosed()) {

@@ -14,6 +14,7 @@ public interface GroupRepository {
 
     String getGroupNameByGameId(Long gameId);
 
+    void deleteDraftGroupsOlderThan(String thresholdText);
     void rename(Long groupId, String name);
     void updateStatus(Long groupId, GroupStatus status);
     void updateLastPlayedAt(Long groupId, String lastPlayedAt);

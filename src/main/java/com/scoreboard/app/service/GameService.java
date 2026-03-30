@@ -9,6 +9,8 @@ import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class GameService {
@@ -71,6 +73,7 @@ public class GameService {
         }
 
         resumeGame();
+        cancelPausedGame();
 
         // Set consecutiveZeroCount & currentTurnIndex & currentPlayer
         orderedPlayersInGame = groupService.findPlayersByGameId(gameId);
@@ -81,10 +84,25 @@ public class GameService {
 
             previousPlayer = groupService.findPlayerByPigId(previousScore.getPlayerInGameId()).orElseThrow();
 
-            int prevIndex = orderedPlayersInGame.indexOf(previousPlayer);
-            int nextIndex = (prevIndex + 1) % playerNum;
+            int prevIndex = -1;
+            Long previousPigId = previousScore.getPlayerInGameId();
 
+            for (int i = 0; i < orderedPlayersInGame.size(); i++) {
+                if (orderedPlayersInGame.get(i).getPigId().equals(previousPigId)) {
+                    prevIndex = i;
+                    break;
+                }
+            }
+
+            if (prevIndex == -1) {
+                throw new IllegalStateException("Previous player was not found in orderedPlayersInGame.");
+            }
+
+            int nextIndex = (prevIndex + 1) % playerNum;
             currentPlayer = orderedPlayersInGame.get(nextIndex);
+
+            List<PlayerTotalScore> playerTotalScores = scoreService.makePlayerTotalScores(currentGame.getGameId());
+            currentRanking = rankingService.buildRanking(currentGame.getGameId(), playerTotalScores);
 
         } else {
             // For paused game without any score input
@@ -244,10 +262,15 @@ public class GameService {
         }
     }
 
-    public void pauseCurrentGameIfInProgress(){
-        if(currentGame != null && currentGame.getGameStatus() == GameStatus.IN_PROGRESS){
-            pauseGame();
-        }
+    public void cleanDb(){
+        pauseRemainingInProgressGames();
+        deleteGamesByStatus(GameStatus.CANCELLED);
+
+        LocalDateTime threshold = LocalDateTime.now().minusDays(7);
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+        String thresholdText = threshold.format(formatter);
+
+        groupService.deleteOldGroup(thresholdText);
     }
 
     // Replace IN_PROGRESS to PAUSED in case an app crashed and remaining IN_PROGRESS status
@@ -272,8 +295,6 @@ public class GameService {
         changeGameStatus(GameStatus.CANCELLED);
 
         Long groupId = currentGame.getGroupId();
-        gameRepository.delete(currentGame.getGameId());
-
         long remaining = gameRepository.countByGroupId(groupId);
         if (remaining == 0) {
             draftGroup();
@@ -306,6 +327,14 @@ public class GameService {
         groupService.updateStatus(currentGroup.getGroupID(), newStatus);
     }
 
+    public void deleteGamesByStatus(GameStatus status){
+        gameRepository.deleteByStatus(status);
+    }
+
+    public void cancelPausedGame(){
+        gameRepository.updateStatusByCurrentStatus(GameStatus.PAUSED, GameStatus.CANCELLED);
+    }
+
     // Error handling: Score is null/negative/non-digit
     private int parseAndValidate(String input) throws ValidationException{
         if (input == null) {
@@ -333,6 +362,7 @@ public class GameService {
         return value;
     }
 
+
     public List<Score> getScores(){
         return scoreService.getScores(currentGame.getGameId());
     }
@@ -349,6 +379,14 @@ public class GameService {
     public Game getPausedGame() {
         List<Game> pausedGames = gameRepository.findAllByStatus(GameStatus.PAUSED);
         return pausedGames.isEmpty() ? null : pausedGames.get(0);
+    }
+
+    public String getPausedGameGroupName(){
+        var pausedGame = getPausedGame();
+        if (pausedGame == null) return null;
+
+        Long groupId = pausedGame.getGroupId();
+        return groupService.getGroupNameByGroupId(groupId);
     }
 
     public List<PlayerTotalScore> makePlayerTotalScores(Long gameId){

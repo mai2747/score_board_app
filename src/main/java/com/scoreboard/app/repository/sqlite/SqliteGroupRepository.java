@@ -114,6 +114,18 @@ public class SqliteGroupRepository implements GroupRepository {
         }
     }
 
+    public void deleteDraftGroupsOlderThan(String threshold) {
+        String sql = "DELETE FROM groups WHERE status = 'DRAFT' AND created_at < ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, threshold);
+
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     @Override
     public Optional<Group> findById(Long id) {
         String sql = "SELECT group_id, name, is_temporary, created_at FROM groups WHERE group_id = ?";

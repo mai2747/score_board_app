@@ -82,6 +82,10 @@ public class GroupService {
         groupRepository.delete(groupId);
     }
 
+    public void deleteOldGroup(String thresholdText) {
+        groupRepository.deleteDraftGroupsOlderThan(thresholdText);
+    }
+
     public Group getGroupById(Long groupID){
         Group group = groupRepository.findById(groupID).orElseThrow();
         List<Player> players = playerRepository.findByGroupId(group.getGroupID());

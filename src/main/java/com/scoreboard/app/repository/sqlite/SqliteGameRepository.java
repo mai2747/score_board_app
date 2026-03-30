@@ -66,6 +66,19 @@ public class SqliteGameRepository implements GameRepository {
     }
 
     @Override
+    public void updateStatusByCurrentStatus(GameStatus from, GameStatus to) {
+        String sql = "UPDATE games SET status = ? WHERE status = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setString(1, to.name());
+            stmt.setString(2, from.name());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("Bulk update game status failed", e);
+        }
+    }
+
+    @Override
     public long countByGroupId(Long groupId) {
         String sql = "SELECT COUNT(*) FROM games WHERE group_id = ?";
 
@@ -82,7 +95,7 @@ public class SqliteGameRepository implements GameRepository {
     }
 
     @Override
-    public void delete(Long gameId) {
+    public void deleteByGameId(Long gameId) {
         String sql = "DELETE FROM games WHERE game_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
@@ -92,6 +105,20 @@ public class SqliteGameRepository implements GameRepository {
 
         }catch (SQLException e){
             throw new RuntimeException("Delete game by game id failed", e);
+        }
+    }
+
+    @Override
+    public void deleteByStatus(GameStatus status) {
+        String sql = "DELETE FROM games WHERE status = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setString(1, status.name());
+
+            stmt.executeUpdate();
+
+        }catch (SQLException e){
+            throw new RuntimeException("Delete game by game status failed", e);
         }
     }
 
@@ -185,19 +212,6 @@ public class SqliteGameRepository implements GameRepository {
             }
         } catch (SQLException e) {
             throw new RuntimeException("Check game status existence failed", e);
-        }
-    }
-
-    @Override
-    public void updateStatusByCurrentStatus(GameStatus from, GameStatus to) {
-        String sql = "UPDATE games SET status = ? WHERE status = ?";
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, to.name());
-            stmt.setString(2, from.name());
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException("Bulk update game status failed", e);
         }
     }
 }
