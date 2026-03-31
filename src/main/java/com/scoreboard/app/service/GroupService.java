@@ -7,6 +7,7 @@ import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.repository.GroupRepository;
 import com.scoreboard.app.repository.PlayerInGameRepository;
 import com.scoreboard.app.repository.PlayerRepository;
+import com.scoreboard.app.util.DateTimeUtils;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
 
 import java.time.LocalDateTime;
@@ -18,8 +19,6 @@ public class GroupService {
     private final PlayerRepository playerRepository;
     private final GroupRepository groupRepository;
     private final PlayerInGameRepository pigRepository;
-
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     public GroupService(PlayerRepository playerRepository, GroupRepository groupRepository, PlayerInGameRepository pigRepository) {
         this.playerRepository = playerRepository;
@@ -74,7 +73,7 @@ public class GroupService {
     }
 
     public void updateLastPlayedAt(Long groupId){
-        String lastPlayedAt = LocalDateTime.now().format(formatter);
+        String lastPlayedAt = DateTimeUtils.format(LocalDateTime.now());
         groupRepository.updateLastPlayedAt(groupId, lastPlayedAt);
     }
 

@@ -9,10 +9,9 @@
    <children>
       <Button fx:id="submitButton" defaultButton="true" layoutX="373.0" layoutY="296.0" mnemonicParsing="false" onAction="#submitScore" text="Submit" />
       <TextField fx:id="scoreField" layoutX="325.0" layoutY="242.0" promptText="Input your score" />
-      <Label fx:id="turnNumberLabel" layoutX="325.0" layoutY="135.0" prefHeight="17.0" prefWidth="149.0" text="Label" />
       <Label fx:id="playerNameLabel" alignment="CENTER" layoutX="227.0" layoutY="175.0" prefHeight="39.0" prefWidth="345.0" textAlignment="CENTER">
          <font>
-            <Font size="27.0" />
+            <Font size="21.0" />
          </font></Label>
       <Label fx:id="errorLabel" alignment="CENTER" layoutX="222.0" layoutY="214.0" prefHeight="17.0" prefWidth="356.0" textAlignment="CENTER" textFill="#e25858" />
       <Pane fx:id="prevScorePane" layoutX="38.0" layoutY="207.0" prefHeight="141.0" prefWidth="170.0">

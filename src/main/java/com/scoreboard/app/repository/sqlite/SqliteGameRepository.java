@@ -3,6 +3,7 @@ package com.scoreboard.app.repository.sqlite;
 import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.GameStatus;
 import com.scoreboard.app.repository.GameRepository;
+import com.scoreboard.app.util.DateTimeUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -23,13 +24,14 @@ public class SqliteGameRepository implements GameRepository {
             throw new IllegalArgumentException("game is null");
         }
 
-        String sql = "INSERT INTO games (group_id, status, rule_version) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO games (group_id, started_at, status, rule_version) VALUES (?, ?, ?, ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
 
             stmt.setLong(1, game.getGroupId());
-            stmt.setString(2, game.getGameStatus().name());
-            stmt.setString(3, game.getGameRule());  // might be changed and used in future expansion
+            stmt.setString(2, game.getStartedTime());
+            stmt.setString(3, game.getGameStatus().name());
+            stmt.setString(4, game.getGameRule());  // might be changed and used in future expansion
 
             stmt.executeUpdate();
 
@@ -124,7 +126,7 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public Optional<Game> findById(Long id) {
-        String sql = "SELECT game_id, group_id, status, rule_version FROM games WHERE game_id = ?";
+        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE game_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
@@ -134,6 +136,7 @@ public class SqliteGameRepository implements GameRepository {
                     return Optional.of(new Game(
                             rs.getLong("game_id"),
                             rs.getLong("group_id"),
+                            DateTimeUtils.parse(rs.getString("started_at")),
                             GameStatus.valueOf(rs.getString("status")),
                             rs.getString("rule_version")
                     ));
@@ -148,7 +151,7 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public List<Game> findAll() {
-        String sql = "SELECT game_id, group_id, status, rule_version FROM games";
+        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games";
 
         List<Game> games = new ArrayList<>();
 
@@ -160,6 +163,7 @@ public class SqliteGameRepository implements GameRepository {
                     Game game = new Game(
                             rs.getLong("game_id"),
                             rs.getLong("group_id"),
+                            DateTimeUtils.parse(rs.getString("started_at")),
                             GameStatus.valueOf(rs.getString("status")),
                             rs.getString("rule_version")
                     );
@@ -175,7 +179,7 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public List<Game> findAllByStatus(GameStatus status) {
-        String sql = "SELECT game_id, group_id, status, rule_version FROM games WHERE status = ?";
+        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE status = ?";
 
         List<Game> games = new ArrayList<>();
 
@@ -187,6 +191,7 @@ public class SqliteGameRepository implements GameRepository {
                     Game game = new Game(
                             rs.getLong("game_id"),
                             rs.getLong("group_id"),
+                            DateTimeUtils.parse(rs.getString("started_at")),
                             GameStatus.valueOf(rs.getString("status")),
                             rs.getString("rule_version")
                     );

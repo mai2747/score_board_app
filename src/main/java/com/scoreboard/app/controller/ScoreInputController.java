@@ -16,6 +16,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 import java.io.IOException;
 import java.util.Comparator;
@@ -107,14 +108,14 @@ public class ScoreInputController implements ContextAwareController{
     }
 
     private void updatePlayerDisplay(){
-        String name = gameService.getPlayerNameByID(gameService.getCurrentPlayer().getPlayerId());
-        System.out.println("|| Current player: " + name + " ||");
-        playerNameLabel.setText(name);
+        Pair<String, Integer> nameAndRound = gameService.createCurrentTurnInfo();
 
-        if(gameService.getPrevPlayer() != null){
-            String prevPlayerName = gameService.getPlayerNameByID(gameService.getPrevPlayer().getPlayerId());
-            prevPlayerLabel.setText(prevPlayerName);
-        }
+        String name = nameAndRound.getKey();
+        int round = nameAndRound.getValue();
+        System.out.println("|| Current player: " + name + " ||");
+
+        playerNameLabel.setText("Round " + round + " / " + name + " 's Turn");
+        prevPlayerLabel.setText(gameService.getPrevPlayerName());
     }
 
     private void updateRankingDisplay(){

@@ -21,6 +21,7 @@ game_id        INTEGER PRIMARY KEY AUTOINCREMENT,
 group_id       INTEGER NOT NULL,
 status         TEXT NOT NULL CHECK (status IN ('IN_PROGRESS', 'FINISHED', 'PAUSED', 'CANCELLED')),
 rule_version   TEXT,
+started_at     TEXT,
 FOREIGN KEY (group_id) REFERENCES groups(group_id) ON DELETE CASCADE
 );
 

@@ -15,6 +15,7 @@ public class PausedGameController implements ContextAwareController{
     private Long pausedGameId;
 
     @FXML private Label groupNameLabel;
+    @FXML private Label startedTimeLabel;
 
     @FXML private Label player1;
     @FXML private Label player2;
@@ -45,6 +46,7 @@ public class PausedGameController implements ContextAwareController{
         List<PlayerTotalScore> pts = gameService.makePlayerTotalScores(pausedGameId);
         String groupName = gameService.getGroupNameByGameId(pausedGameId);
         groupNameLabel.setText(groupName);
+        startedTimeLabel.setText(pausedGame.getStartedTime());
 
         setPlayerLabels(pts);
         setScoreLabels(pts);

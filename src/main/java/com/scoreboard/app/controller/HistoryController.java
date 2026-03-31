@@ -1,6 +1,7 @@
 package com.scoreboard.app.controller;
 
 import com.scoreboard.app.AppContext;
+import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.service.GameService;
@@ -12,8 +13,9 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 
-public class GroupSelectController implements ContextAwareController{
+public class HistoryController implements ContextAwareController{
     @FXML private ListView<Group> groupListView;
+    @FXML private ListView<Game> gameListView;
 
     private GameService gameService;
     private GroupService groupService;
@@ -50,6 +52,16 @@ public class GroupSelectController implements ContextAwareController{
     }
 
     @FXML
+    public void groupClicked(){
+
+    }
+
+    @FXML
+    public void groupUnclicked(){
+
+    }
+
+    @FXML
     public void selectGroup(){
         Group selected = groupListView.getSelectionModel().getSelectedItem();
         gameService.selectGroup(selected.getGroupID());
@@ -58,13 +70,7 @@ public class GroupSelectController implements ContextAwareController{
     }
 
     @FXML
-    public void createNewGroup(){
-        ViewManager.switchTo("GroupSetup.fxml");
-    }
-
-    @FXML
     public void backToHome(){
         ViewManager.switchTo("Menu.fxml");
     }
-
 }

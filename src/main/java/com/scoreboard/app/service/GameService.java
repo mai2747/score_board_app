@@ -4,10 +4,12 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
+import com.scoreboard.app.util.DateTimeUtils;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
+import javafx.util.Pair;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -267,8 +269,8 @@ public class GameService {
         deleteGamesByStatus(GameStatus.CANCELLED);
 
         LocalDateTime threshold = LocalDateTime.now().minusDays(7);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        String thresholdText = threshold.format(formatter);
+
+        String thresholdText = DateTimeUtils.format(threshold);
 
         groupService.deleteOldGroup(thresholdText);
     }
@@ -369,6 +371,20 @@ public class GameService {
 
     public String getPlayerNameByID(Long id){
         return nameByPlayerID.getOrDefault(id, "Unknown Player");
+    }
+
+    public Pair<String, Integer> createCurrentTurnInfo(){
+        String currentPlayer = getPlayerNameByID(getCurrentPlayer().getPlayerId());
+        int round = ((currentTurnIndex - 1) / playerNum) + 1;
+
+        return new Pair<>(currentPlayer, round);
+    }
+
+    public String getPrevPlayerName() {
+        PlayerInGame prev = getPrevPlayer();
+        if (prev == null) return "";
+
+        return getPlayerNameByID(prev.getPlayerId());
     }
 
     public boolean hasPausedGame() {
