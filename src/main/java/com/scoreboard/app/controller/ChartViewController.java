@@ -4,11 +4,12 @@ import com.scoreboard.app.AppContext;
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
+import com.scoreboard.app.viewmodel.ScoreRow;
 import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
-import javafx.scene.control.Button;
+import javafx.scene.control.*;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -19,6 +20,14 @@ public class ChartViewController implements ContextAwareController{
     @FXML private NumberAxis xAxis;
     @FXML private NumberAxis yAxis;
     @FXML private Button backToRankingsButton;
+    @FXML private RadioButton chartViewRadioButton;
+    @FXML private RadioButton tableViewRadioButton;
+
+    @FXML private TableView<ScoreRow> scoreTable;
+    @FXML private TableColumn<ScoreRow, String> playerColumn;
+    @FXML private TableColumn<ScoreRow, Integer> turnColumn;
+    @FXML private TableColumn<ScoreRow, Integer> scoreColumn;
+    @FXML private TableColumn<ScoreRow, Integer> totalColumn;
 
     private GameService gameService;
     AppContext context;
@@ -35,15 +44,41 @@ public class ChartViewController implements ContextAwareController{
             backToRankingsButton.setText("Back to Rankings");
         }
 
-        setLineChart();
+        generateChartAndTable();
     }
 
-    private void setLineChart() {
+    @FXML
+    public void initialize(){
+        ToggleGroup toggleGroup = new ToggleGroup();
+        chartViewRadioButton.setToggleGroup(toggleGroup);
+        tableViewRadioButton.setToggleGroup(toggleGroup);
+
+        chartViewRadioButton.setSelected(true);
+
+        scoreChart.visibleProperty().bind(chartViewRadioButton.selectedProperty());
+        scoreChart.managedProperty().bind(chartViewRadioButton.selectedProperty());
+
+        scoreTable.visibleProperty().bind(tableViewRadioButton.selectedProperty());
+        scoreTable.managedProperty().bind(tableViewRadioButton.selectedProperty());
+
+        playerColumn.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleStringProperty(data.getValue().getPlayerName()));
+
+        turnColumn.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getTurn()).asObject());
+
+        scoreColumn.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getScore()).asObject());
+
+        totalColumn.setCellValueFactory(data ->
+                new javafx.beans.property.SimpleIntegerProperty(data.getValue().getTotal()).asObject());
+
+    }
+
+    private void generateChartAndTable(){
         scoreChart.getData().clear();
         scoreChart.setAnimated(false);
         scoreChart.setCreateSymbols(true);
-
-        configureAxes();
 
         Long targetGameId;
         if (context.getSelectedGameId() != null && context.getSelectedGroupId() != null) {
@@ -57,9 +92,17 @@ public class ChartViewController implements ContextAwareController{
             return;
         }
 
+        setLineChart(scores);
+        setTable(scores);
+    }
+
+    private void setLineChart(List<Score> scores) {
         Map<Long, XYChart.Series<Number, Number>> seriesMap = new LinkedHashMap<>();
         Map<Long, Integer> cumulativeScoreMap = new LinkedHashMap<>();
         Map<Long, Integer> turnCountMap = new LinkedHashMap<>();
+
+        int maxScore = 0;
+        int maxTurn = 0;
 
         for (Score score : scores) {
             Long pigId = score.getPlayerInGameId();
@@ -76,24 +119,35 @@ public class ChartViewController implements ContextAwareController{
             int newCumulative = cumulativeScoreMap.get(pigId) + score.getScore();
             int newTurnCount = turnCountMap.get(pigId) + 1;
 
+            maxScore = Math.max(maxScore, newCumulative);
+            maxTurn = Math.max(maxTurn, newTurnCount);
+
             cumulativeScoreMap.put(pigId, newCumulative);
             turnCountMap.put(pigId, newTurnCount);
 
             series.getData().add(new XYChart.Data<>(newTurnCount, newCumulative));
         }
 
+        configureAxes(maxTurn, maxScore);
+
         scoreChart.getData().addAll(seriesMap.values());
         javafx.application.Platform.runLater(this::applySeriesColors);
     }
 
-    private void configureAxes() {
+    private void configureAxes(int maxTurn, int maxScore) {
         xAxis.setLabel("Turn");
         yAxis.setLabel("Total Score");
 
-        xAxis.setAutoRanging(true);
+        xAxis.setAutoRanging(false);
+        xAxis.setLowerBound(0);
+        xAxis.setUpperBound(maxTurn + 1);
         xAxis.setTickUnit(1);
-        xAxis.setMinorTickVisible(false);
-        xAxis.setMinorTickCount(0);
+        xAxis.setForceZeroInRange(true);
+
+        yAxis.setAutoRanging(false);
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(maxScore * 1.1);
+        yAxis.setTickUnit(1);
     }
 
     private void applySeriesColors() {
@@ -117,6 +171,37 @@ public class ChartViewController implements ContextAwareController{
                 }
             }
         }
+    }
+
+    private void setTable(List<Score> scores) {
+        Map<Long, Integer> cumulativeScoreMap = new LinkedHashMap<>();
+        Map<Long, Integer> turnCountMap = new LinkedHashMap<>();
+
+        javafx.collections.ObservableList<ScoreRow> tableData =
+                javafx.collections.FXCollections.observableArrayList();
+
+        for (Score score : scores) {
+            Long pigId = score.getPlayerInGameId();
+
+            cumulativeScoreMap.putIfAbsent(pigId, 0);
+            turnCountMap.putIfAbsent(pigId, 0);
+
+            int newTotal = cumulativeScoreMap.get(pigId) + score.getScore();
+            int newTurn = turnCountMap.get(pigId) + 1;
+
+            cumulativeScoreMap.put(pigId, newTotal);
+            turnCountMap.put(pigId, newTurn);
+
+            String playerName = gameService.getPlayerNameByPigId(pigId);
+
+            tableData.add(new ScoreRow(
+                    playerName,
+                    newTurn,
+                    score.getScore(),
+                    newTotal
+            ));
+        }
+        scoreTable.setItems(tableData);
     }
 
     @FXML

@@ -6,15 +6,31 @@
 
 <AnchorPane prefHeight="400.0" prefWidth="600.0" stylesheets="@../css/chart.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.ChartViewController">
    <children>
-      <LineChart fx:id="scoreChart" layoutX="72.0" layoutY="14.0" prefHeight="303.0" prefWidth="456.0">
-          <xAxis>
-              <NumberAxis label="Turn" fx:id="xAxis" />
-          </xAxis>
-          <yAxis>
-              <NumberAxis fx:id="yAxis" label="Total Score" />
-          </yAxis>
-      </LineChart>
-      <Button fx:id="backToRankingsButton" layoutX="139.0" layoutY="334.0" mnemonicParsing="false" onAction="#backToRankings" text="Back to Rankings" />
-      <Button layoutX="362.0" layoutY="334.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
+       <StackPane layoutX="126.0" layoutY="21.0">
+          <LineChart fx:id="scoreChart" layoutX="72.0" layoutY="14.0" prefHeight="303.0" prefWidth="456.0">
+              <xAxis>
+                  <NumberAxis label="Turn" fx:id="xAxis" />
+              </xAxis>
+              <yAxis>
+                  <NumberAxis fx:id="yAxis" label="Total Score" />
+              </yAxis>
+          </LineChart>
+           <TableView fx:id="scoreTable" layoutX="72.0" layoutY="14.0" prefHeight="303.0" prefWidth="456.0">
+               <columns>
+                   <TableColumn fx:id="playerColumn" text="Player" />
+                   <TableColumn fx:id="turnColumn" text="Turn" />
+                   <TableColumn fx:id="scoreColumn" text="Score" />
+                   <TableColumn fx:id="totalColumn" text="Total" />
+               </columns>
+           </TableView>
+       </StackPane>
+      <Button fx:id="backToRankingsButton" layoutX="19.0" layoutY="347.0" mnemonicParsing="false" onAction="#backToRankings" text="Back to Rankings" />
+      <Button layoutX="483.0" layoutY="347.0" mnemonicParsing="false" onAction="#backToHome" text="Back to Home" />
+      <VBox fx:id="radioButtonContainer" layoutX="27.0" layoutY="219.0" prefHeight="59.0" prefWidth="91.0" spacing="10">
+         <children>
+            <RadioButton fx:id="chartViewRadioButton" mnemonicParsing="false" text="List Chart" />
+            <RadioButton fx:id="tableViewRadioButton" mnemonicParsing="false" text="Table" />
+         </children>
+      </VBox>
    </children>
 </AnchorPane>

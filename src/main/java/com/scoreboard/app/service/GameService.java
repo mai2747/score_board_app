@@ -352,6 +352,10 @@ public class GameService {
         gameRepository.deleteByStatus(status);
     }
 
+    public void deleteGameByGameId(Long gameId){
+        gameRepository.deleteByGameId(gameId);
+    }
+
     public void cancelPausedGame(){
         gameRepository.updateStatusByCurrentStatus(GameStatus.PAUSED, GameStatus.CANCELLED);
     }
@@ -362,7 +366,6 @@ public class GameService {
         for (PlayerInGame pig : orderedPlayersInGame) {
             map.put(pig.getPigId(), pig);
         }
-
         return map;
     }
 

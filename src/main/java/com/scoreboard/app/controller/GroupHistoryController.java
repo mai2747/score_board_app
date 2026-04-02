@@ -17,6 +17,7 @@ import javafx.scene.layout.HBox;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 public class GroupHistoryController implements ContextAwareController{
     @FXML private ListView<Player> playerNameListView;
@@ -27,12 +28,14 @@ public class GroupHistoryController implements ContextAwareController{
     @FXML private Label selectedPlayerStatsLabel;
     @FXML private HBox playerStatsHBox;
     @FXML private Button viewChartButton;
+    @FXML private Button deleteGameButton;
 
     private Map<Long, PlayerWinRateDTO> playerWinRateMap;
     private PlayerWinRateDTO bestWinRatePlayer;
 
     GameService gameService;
     AppContext context;
+    Group group;
 
     @Override
     public void setContext(AppContext context) {
@@ -42,9 +45,13 @@ public class GroupHistoryController implements ContextAwareController{
         playerStatsHBox.setVisible(false);
         playerStatsHBox.setManaged(false);
 
-        Long gameId = context.getSelectedGroupId();
-        Group group = gameService.getGroupByGameId(gameId);
+        Long groupId = context.getSelectedGroupId();
+        group = gameService.getGroup(groupId);
 
+        refreshHistoryDisplay();
+    }
+
+    private void refreshHistoryDisplay(){
         this.playerWinRateMap = gameService.getPlayerWinRatesByGroupId(group.getGroupId());
         this.bestWinRatePlayer = gameService.findBestWinRatePlayer(playerWinRateMap);
 
@@ -55,6 +62,9 @@ public class GroupHistoryController implements ContextAwareController{
 
     @FXML
     public void initialize(){
+        deleteGameButton.disableProperty().bind(
+                pastRankingsListView.getSelectionModel().selectedItemProperty().isNull()
+        );
         viewChartButton.disableProperty().bind(
                 pastRankingsListView.getSelectionModel().selectedItemProperty().isNull()
         );
@@ -137,15 +147,6 @@ public class GroupHistoryController implements ContextAwareController{
             private String formatEntry(RankingEntryDTO entry) {
                 return ordinal(entry.rank()) + ". " + entry.playerName() + " " + entry.totalScore();
             }
-
-            private String ordinal(int rank) {
-                return switch (rank) {
-                    case 1 -> "1st";
-                    case 2 -> "2nd";
-                    case 3 -> "3rd";
-                    default -> rank + "th";
-                };
-            }
         });
     }
 
@@ -162,6 +163,58 @@ public class GroupHistoryController implements ContextAwareController{
                 bestWinRatePlayer.wins(),
                 bestWinRatePlayer.gamesPlayed()
         ));
+    }
+
+    @FXML
+    void deleteSelectedGame(){
+        RankingDTO selected = pastRankingsListView.getSelectionModel().getSelectedItem();
+        if (selected == null) return;
+
+        String rankingText = formatRankingForDialog(selected);
+
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm");
+        alert.setHeaderText("Delete Game?");
+        alert.setContentText(
+                "The following game result will be deleted:\n\n" +
+                        rankingText +
+                        "\n\nThis game status will be deleted completely."
+        );
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
+        gameService.deleteGameByGameId(selected.gameId());
+        refreshHistoryDisplay();
+    }
+
+    private String formatRankingForDialog(RankingDTO ranking) {
+        if (ranking == null || ranking.entries() == null || ranking.entries().isEmpty()) {
+            return "No ranking data";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (RankingEntryDTO entry : ranking.entries()) {
+            sb.append(ordinal(entry.rank()))
+                    .append(". ")
+                    .append(entry.playerName())
+                    .append(" ")
+                    .append(entry.totalScore())
+                    .append("\n");
+        }
+        return sb.toString().trim();
+    }
+
+    private String ordinal(int rank) {
+        return switch (rank) {
+            case 1 -> "1st";
+            case 2 -> "2nd";
+            case 3 -> "3rd";
+            default -> rank + "th";
+        };
     }
 
     @FXML void playerStatsTransition(){

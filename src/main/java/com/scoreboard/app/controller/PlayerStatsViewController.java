@@ -3,6 +3,7 @@ package com.scoreboard.app.controller;
 import com.scoreboard.app.AppContext;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
+import com.scoreboard.app.model.PlayerInGame;
 import com.scoreboard.app.service.GameService;
 import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.PlayerGameStatDTO;
@@ -44,11 +45,11 @@ public class PlayerStatsViewController implements ContextAwareController{
         Group group = gameService.getGroup(context.getSelectedGroupId());
         maxPlayers = group.getPlayers().size();
 
-        configureAxes();
-        createPlayerCheckBoxes(group.getPlayers());
-
         playerStatsMap = gameService.getPlayerStatsByGroupId(group.getGroupId());
+        int maxGameIndex = playerStatsMap.values().iterator().next().size();
 
+        configureAxes(maxGameIndex);
+        createPlayerCheckBoxes(group.getPlayers());
         redrawChart();
     }
 
@@ -114,19 +115,18 @@ public class PlayerStatsViewController implements ContextAwareController{
         }
     }
 
-    private void configureAxes() {
+    private void configureAxes(int maxGameIndex) {
         xAxis.setLabel("Game");
         yAxis.setLabel("Total Score");
 
-        xAxis.setAutoRanging(true);
+        xAxis.setAutoRanging(false);
+        xAxis.setLowerBound(0);
+        xAxis.setUpperBound(maxGameIndex+1);
         xAxis.setTickUnit(1);
-        xAxis.setMinorTickVisible(false);
-        xAxis.setMinorTickCount(0);
 
         yAxis.setTickLabelFormatter(new StringConverter<Number>() {
             @Override
             public String toString(Number object) {
-                int maxPlayers = 4;
                 return String.valueOf(maxPlayers + 1 - object.intValue());
             }
 
@@ -140,10 +140,15 @@ public class PlayerStatsViewController implements ContextAwareController{
     private void updateYAxis(boolean showScore) {
         if (showScore) {
             yAxis.setLabel("Total Score");
+            yAxis.setAutoRanging(true);
             yAxis.setTickLabelFormatter(null);
             yAxis.setForceZeroInRange(false);
         } else {
             yAxis.setLabel("Rank");
+            yAxis.setAutoRanging(false);
+            yAxis.setLowerBound(0);
+            yAxis.setUpperBound(maxPlayers +1);
+            yAxis.setTickUnit(1);
 
             yAxis.setTickLabelFormatter(new StringConverter<Number>() {
                 @Override
@@ -159,7 +164,6 @@ public class PlayerStatsViewController implements ContextAwareController{
             yAxis.setForceZeroInRange(false);
         }
     }
-
 
     private void applySeriesColors() {
         for (int i = 0; i < statsChart.getData().size(); i++) {
