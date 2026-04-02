@@ -15,6 +15,7 @@ public interface GameRepository {
     Optional<Game> findById(Long gameId);
     List<Game> findAll();
     List<Game> findAllByStatus(GameStatus status);
+    List<Game> findRecentFinishedGamesByGroupId(Long gameId);
 
     boolean existsByStatus(GameStatus status);
     void updateStatusByCurrentStatus(GameStatus from, GameStatus to);

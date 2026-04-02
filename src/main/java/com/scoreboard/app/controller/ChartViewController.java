@@ -8,8 +8,8 @@ import javafx.fxml.FXML;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
+import javafx.scene.control.Button;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +18,22 @@ public class ChartViewController implements ContextAwareController{
     @FXML private LineChart<Number,Number> scoreChart;
     @FXML private NumberAxis xAxis;
     @FXML private NumberAxis yAxis;
+    @FXML private Button backToRankingsButton;
 
     private GameService gameService;
+    AppContext context;
 
     @Override
     public void setContext(AppContext context) {
         gameService = context.gameService();
+        this.context = context;
+
+        if(context.getSelectedGameId() != null && context.getSelectedGroupId() != null){
+            gameService.setNameByPlayerId(context.getSelectedGameId(), context.getSelectedGroupId());
+            backToRankingsButton.setText("Back to History");
+        }else{
+            backToRankingsButton.setText("Back to Rankings");
+        }
 
         setLineChart();
     }
@@ -35,7 +45,14 @@ public class ChartViewController implements ContextAwareController{
 
         configureAxes();
 
-        List<Score> scores = gameService.getScores();
+        Long targetGameId;
+        if (context.getSelectedGameId() != null && context.getSelectedGroupId() != null) {
+            targetGameId = context.getSelectedGameId();
+        } else {
+            targetGameId = gameService.getCurrentGame().getGameId();
+        }
+
+        List<Score> scores = gameService.getScores(targetGameId);
         if (scores == null || scores.isEmpty()) {
             return;
         }
@@ -45,28 +62,27 @@ public class ChartViewController implements ContextAwareController{
         Map<Long, Integer> turnCountMap = new LinkedHashMap<>();
 
         for (Score score : scores) {
-            Long playerId = score.getPlayerInGameId();
+            Long pigId = score.getPlayerInGameId();
 
-            XYChart.Series<Number, Number> series = seriesMap.computeIfAbsent(playerId, id -> {
+            XYChart.Series<Number, Number> series = seriesMap.computeIfAbsent(pigId, id -> {
                 XYChart.Series<Number, Number> s = new XYChart.Series<>();
-                s.setName(gameService.getPlayerNameByID(id));
+                s.setName(gameService.getPlayerNameByPigId(id));
                 s.getData().add(new XYChart.Data<>(0, 0));
                 cumulativeScoreMap.put(id, 0);
                 turnCountMap.put(id, 0);
                 return s;
             });
 
-            int newCumulative = cumulativeScoreMap.get(playerId) + score.getScore();
-            int newTurnCount = turnCountMap.get(playerId) + 1;
+            int newCumulative = cumulativeScoreMap.get(pigId) + score.getScore();
+            int newTurnCount = turnCountMap.get(pigId) + 1;
 
-            cumulativeScoreMap.put(playerId, newCumulative);
-            turnCountMap.put(playerId, newTurnCount);
+            cumulativeScoreMap.put(pigId, newCumulative);
+            turnCountMap.put(pigId, newTurnCount);
 
             series.getData().add(new XYChart.Data<>(newTurnCount, newCumulative));
         }
 
         scoreChart.getData().addAll(seriesMap.values());
-
         javafx.application.Platform.runLater(this::applySeriesColors);
     }
 
@@ -75,7 +91,6 @@ public class ChartViewController implements ContextAwareController{
         yAxis.setLabel("Total Score");
 
         xAxis.setAutoRanging(true);
-        xAxis.setForceZeroInRange(true);
         xAxis.setTickUnit(1);
         xAxis.setMinorTickVisible(false);
         xAxis.setMinorTickCount(0);
@@ -106,7 +121,12 @@ public class ChartViewController implements ContextAwareController{
 
     @FXML
     public void backToRankings(){
-        ViewManager.switchTo("Result.fxml");
+        if(context.getSelectedGameId() != null && context.getSelectedGroupId() != null){
+            context.setSelectedGameId(null);
+            ViewManager.switchTo("GroupHistory.fxml");
+        }else {
+            ViewManager.switchTo("Result.fxml");
+        }
     }
 
     @FXML

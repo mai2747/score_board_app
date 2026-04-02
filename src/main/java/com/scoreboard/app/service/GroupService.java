@@ -9,9 +9,9 @@ import com.scoreboard.app.repository.PlayerInGameRepository;
 import com.scoreboard.app.repository.PlayerRepository;
 import com.scoreboard.app.util.DateTimeUtils;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
+import com.scoreboard.app.viewmodel.PlayerWinRateDTO;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class GroupService {
@@ -40,7 +40,7 @@ public class GroupService {
         groupRepository.save(group);  // Generate group ID and save it in player entities
 
         for (Player player : group.getPlayers()) {
-            player.setGroupId(group.getGroupID());
+            player.setGroupId(group.getGroupId());
             playerRepository.save(player);
         }
     }
@@ -87,7 +87,7 @@ public class GroupService {
 
     public Group getGroupById(Long groupID){
         Group group = groupRepository.findById(groupID).orElseThrow();
-        List<Player> players = playerRepository.findByGroupId(group.getGroupID());
+        List<Player> players = playerRepository.findByGroupId(group.getGroupId());
         group.setPlayers(players);
 
         return group;
@@ -111,11 +111,15 @@ public class GroupService {
         return pigRepository.findById(pigId);
     }
 
+    public Map<Long, PlayerWinRateDTO> findPlayerWinRatesByGroupId(Long groupId){
+        return playerRepository.findPlayerWinRatesByGroupId(groupId);
+    }
+
     public List<Group> getAllGroups(){
         List<Group> groups = groupRepository.findAll();
 
         for (Group group : groups) {
-            List<Player> players = playerRepository.findByGroupId(group.getGroupID());
+            List<Player> players = playerRepository.findByGroupId(group.getGroupId());
             group.setPlayers(players);
         }
 

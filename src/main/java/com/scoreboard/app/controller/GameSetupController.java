@@ -47,7 +47,7 @@ public class GameSetupController implements ContextAwareController{
     }
 
     public void putGroupInfo() {
-        players = FXCollections.observableArrayList(gameService.getPlayers());
+        players = FXCollections.observableArrayList(gameService.getCurrentPlayers());
 
         playerOrderListView.setItems(players);
 

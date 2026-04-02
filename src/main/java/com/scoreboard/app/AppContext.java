@@ -23,6 +23,9 @@ public final class AppContext {
     private final GroupService groupService;
     private final GameService gameService;
 
+    private Long groupId;
+    private Long gameId;
+
     public AppContext(Connection conn) {
         this.scoreRepository = new SqliteScoreRepository(conn);
         this.playerRepository = new SqlitePlayerRepository(conn);
@@ -39,8 +42,9 @@ public final class AppContext {
     public ScoreService scoreService() { return scoreService; }
     public GroupService groupService() { return groupService; }
 
-    public PlayerRepository playerRepository() { return playerRepository; }
-    public GroupRepository groupRepository() { return groupRepository; }
-    public GameRepository gameRepository() { return gameRepository; }
-    public ScoreRepository scoreRepository() { return scoreRepository; }
+    public void setSelectedGroupId(Long groupId){ this.groupId = groupId; }
+    public Long getSelectedGroupId() {return groupId; }
+
+    public void setSelectedGameId(Long gameId){ this.gameId = gameId; }
+    public Long getSelectedGameId() {return gameId; }
 }

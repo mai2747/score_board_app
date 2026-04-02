@@ -5,19 +5,17 @@ import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.util.DateTimeUtils;
-import com.scoreboard.app.viewmodel.PlayerTotalScore;
-import com.scoreboard.app.viewmodel.RankingDTO;
+import com.scoreboard.app.viewmodel.*;
 import com.scoreboard.app.view.ViewManager;
-import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import javafx.util.Pair;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class GameService {
     private List<PlayerInGame> orderedPlayersInGame;
-    private Map<Long, String> nameByPlayerID;
+    private Map<Long, PlayerInGame> pigByPigId;
+    private Map<Long, String> nameByPlayerId;
 
     private Game currentGame;
     private Group currentGroup;
@@ -67,7 +65,7 @@ public class GameService {
         currentGame = gameRepository.findById(gameId).orElseThrow();
         currentGroup = groupService.getGroupById(currentGame.getGroupId());
         playerNum = currentGroup.getPlayers().size();
-        nameByPlayerID = createPlayerNameMap();
+        nameByPlayerId = createPlayerNameMap(currentGame.getGameId(), currentGroup.getGroupId());
 
         // dummy
         if(currentGame.getGameRule().matches("DEFAULT")){
@@ -79,6 +77,7 @@ public class GameService {
 
         // Set consecutiveZeroCount & currentTurnIndex & currentPlayer
         orderedPlayersInGame = groupService.findPlayersByGameId(gameId);
+        pigByPigId = createPigByPigIdMap();
         previousScore = scoreService.findLatestByGameId(gameId).orElse(null); // need to be nullable
 
         if (previousScore != null) {
@@ -103,8 +102,7 @@ public class GameService {
             int nextIndex = (prevIndex + 1) % playerNum;
             currentPlayer = orderedPlayersInGame.get(nextIndex);
 
-            List<PlayerTotalScore> playerTotalScores = scoreService.makePlayerTotalScores(currentGame.getGameId());
-            currentRanking = rankingService.buildRanking(currentGame.getGameId(), playerTotalScores);
+            currentRanking = updateRanking(gameId);
 
         } else {
             // For paused game without any score input
@@ -124,15 +122,16 @@ public class GameService {
 
         GameSettings gameSettings = createNewGameSettings(enableTimer, timerSeconds);
 
-        currentGame = new Game(currentGroup.getGroupID(), gameSettings);
+        currentGame = new Game(currentGroup.getGroupId(), gameSettings);
         gameRepository.save(currentGame);
     }
 
     private void registerPlayersWithOrder(List<Long> orderedIDs) {
         orderedPlayersInGame = groupService.registerPlayersInGame(currentGroup, currentGame.getGameId(), orderedIDs);
+        pigByPigId = createPigByPigIdMap();
         playerNum = orderedIDs.size();
         currentPlayer = orderedPlayersInGame.get(0);
-        nameByPlayerID = createPlayerNameMap();
+        nameByPlayerId = createPlayerNameMap(currentPlayer.getGameId(), currentGroup.getGroupId());
 
         for (PlayerInGame pig : orderedPlayersInGame) {
             System.out.println("PIG: playerId=" + pig.getPlayerId() + ", order=" + pig.getTurnOrder());
@@ -155,14 +154,35 @@ public class GameService {
         currentGame.setSettings(newGameSettings);
     }
 
-    private Map<Long, String> createPlayerNameMap() {
+    private Map<Long, String> createPlayerNameMap(Long gameId, Long groupId) {
+        Map<Long, String> nameByPigId = new HashMap<>();
         Map<Long, String> nameByID = new HashMap<>();
 
-        for (Player player : currentGroup.getPlayers()) {
+        System.out.println("Creating Player-Name Map");
+
+        List<PlayerInGame> pigs = groupService.findPlayersByGameId(gameId);
+        Group group = groupService.getGroupById(groupId);
+        for (Player player : group.getPlayers()) {
             nameByID.put(player.getId(), player.getName());
+            System.out.println("ID -> " + player.getId() + " / Name -> " + player);
         }
 
-        return nameByID;
+        for (PlayerInGame pig : pigs) {
+            Long pigId = pig.getPigId();
+            Long playerId = pig.getPlayerId();
+
+            String name = nameByID.get(playerId);
+
+            nameByPigId.put(pigId, name);
+
+            System.out.println(
+                    "pigId -> " + pigId +
+                            " / playerId -> " + playerId +
+                            " / name -> " + name
+            );
+        }
+
+        return nameByPigId;
     }
 
     public void submitScore(String scoreInField) throws ValidationException {
@@ -198,14 +218,13 @@ public class GameService {
     }
 
     private void afterScoreChanged(boolean useLastScoreAsPrevious) {
-        List<Score> scores = scoreService.getScores(currentGame.getGameId());
+        List<Score> scores = getScores(currentGame.getGameId());
 
         if (useLastScoreAsPrevious && !scores.isEmpty()) {
             previousScore = scores.get(scores.size() - 1);
         }
 
-        List<PlayerTotalScore> playerTotalScores = scoreService.makePlayerTotalScores(currentGame.getGameId());
-        currentRanking = rankingService.buildRanking(currentGame.getGameId(), playerTotalScores);
+        currentRanking = updateRanking(currentPlayer.getGameId());
     }
 
     private void endGame() {
@@ -236,20 +255,20 @@ public class GameService {
         previousPlayer = currentPlayer;
         currentPlayer = orderedPlayersInGame.get(currentTurnIndex++ % playerNum);
 
-        System.out.println("Next player is " + nameByPlayerID.get(currentPlayer.getPlayerId()));
+        System.out.println("Next player is " + nameByPlayerId.get(currentPlayer.getPlayerId()));
         System.out.println();
     }
 
     public void printGameInfoLog(){
         if(!currentGroup.isTemporary()){
             // TODO: Check if the scores in Game entity and repository the same when ending a game
-            currentGame.setScores(scoreService.getScores(currentGame.getGameId()));
+            currentGame.setScores(getScores(currentGame.getGameId()));
 
             Group group = groupService.getGroupById(currentGame.getGroupId());
             System.out.println("Saved this game");
             System.out.println();
             System.out.println("Group Name: " + group.getGroupName() + "\n" +
-                    "GroupID: " + group.getGroupID() + "\n" +
+                    "GroupID: " + group.getGroupId() + "\n" +
                     "GameID: " + currentGame.getGameId() + "\n" +
                     "Player Num: " + group.getPlayers().size() + "\n" + "Players:");
             for(Player p: group.getPlayers()){
@@ -260,7 +279,7 @@ public class GameService {
 
     public void handleTemporaryGroup(){
         if(currentGroup.isTemporary()){
-            groupService.deleteGroup(currentGroup.getGroupID());
+            groupService.deleteGroup(currentGroup.getGroupId());
         }
     }
 
@@ -282,7 +301,7 @@ public class GameService {
 
     public void finishGame() {
         changeGameStatus(GameStatus.FINISHED);
-        groupService.updateLastPlayedAt(currentGroup.getGroupID());
+        groupService.updateLastPlayedAt(currentGroup.getGroupId());
     }
 
     public void pauseGame() {
@@ -326,7 +345,7 @@ public class GameService {
         }
 
         currentGroup.setStatus(newStatus);
-        groupService.updateStatus(currentGroup.getGroupID(), newStatus);
+        groupService.updateStatus(currentGroup.getGroupId(), newStatus);
     }
 
     public void deleteGamesByStatus(GameStatus status){
@@ -335,6 +354,16 @@ public class GameService {
 
     public void cancelPausedGame(){
         gameRepository.updateStatusByCurrentStatus(GameStatus.PAUSED, GameStatus.CANCELLED);
+    }
+
+    private Map<Long, PlayerInGame> createPigByPigIdMap() {
+        Map<Long, PlayerInGame> map = new HashMap<>();
+
+        for (PlayerInGame pig : orderedPlayersInGame) {
+            map.put(pig.getPigId(), pig);
+        }
+
+        return map;
     }
 
     // Error handling: Score is null/negative/non-digit
@@ -364,17 +393,20 @@ public class GameService {
         return value;
     }
 
-
-    public List<Score> getScores(){
-        return scoreService.getScores(currentGame.getGameId());
+    public List<Score> getCurrentScores(){
+        return getScores(currentGame.getGameId());
     }
 
-    public String getPlayerNameByID(Long id){
-        return nameByPlayerID.getOrDefault(id, "Unknown Player");
+    public List<Score> getScores(Long gameId){
+        return scoreService.getScores(gameId);
+    }
+
+    public String getPlayerNameByPigId(Long pigId){
+        return nameByPlayerId.getOrDefault(pigId, "Unknown Player");
     }
 
     public Pair<String, Integer> createCurrentTurnInfo(){
-        String currentPlayer = getPlayerNameByID(getCurrentPlayer().getPlayerId());
+        String currentPlayer = getPlayerNameByPigId(getCurrentPlayer().getPigId());
         int round = ((currentTurnIndex - 1) / playerNum) + 1;
 
         return new Pair<>(currentPlayer, round);
@@ -384,7 +416,7 @@ public class GameService {
         PlayerInGame prev = getPrevPlayer();
         if (prev == null) return "";
 
-        return getPlayerNameByID(prev.getPlayerId());
+        return getPlayerNameByPigId(prev.getPigId());
     }
 
     public boolean hasPausedGame() {
@@ -409,6 +441,11 @@ public class GameService {
         return groupService.findPlayerTotalScoreByGameId(gameId);
     }
 
+    public RankingDTO updateRanking(Long gameId){
+        List<PlayerTotalScore> playerTotalScores = makePlayerTotalScores(gameId);
+        return rankingService.buildRanking(gameId, playerTotalScores);
+    }
+
     public String getGroupNameByGameId(Long gameId){
         Game game = gameRepository.findById(gameId)
                 .orElseThrow();
@@ -417,12 +454,65 @@ public class GameService {
         return groupService.getGroupNameByGroupId(groupId);
     }
 
-    // Return should be String/List<Player>/Group???
-    public List<Player> getPlayers(){
-        List<Player> players = new ArrayList<>();
+    public Group getGroupByGameId(Long gameId){
+        Game game = gameRepository.findById(gameId)
+                .orElseThrow();
+        Long groupId = game.getGroupId();
 
-        players.addAll(currentGroup.getPlayers());
-        return players;
+        return groupService.getGroupById(groupId);
+    }
+
+    public Map<Long, PlayerWinRateDTO> getPlayerWinRatesByGroupId(Long groupId){
+        return groupService.findPlayerWinRatesByGroupId(groupId);
+    }
+
+    public PlayerWinRateDTO findBestWinRatePlayer(Map<Long, PlayerWinRateDTO> winRates){
+        return winRates.values().stream()
+                .max(Comparator
+                        .comparingDouble(PlayerWinRateDTO::winRate)
+                        .thenComparingInt(PlayerWinRateDTO::wins)
+                        .thenComparing(PlayerWinRateDTO::playerName, String.CASE_INSENSITIVE_ORDER)
+                )
+                .orElse(null);
+    }
+
+    public List<Game> findRecentFinishedGamesByGroupId(Long groupId){
+        return gameRepository.findRecentFinishedGamesByGroupId(groupId);
+    }
+
+    public Map<Long, List<PlayerGameStatDTO>> getPlayerStatsByGroupId(Long groupId) {
+        List<Game> games = findRecentFinishedGamesByGroupId(groupId);
+
+        Map<Long, List<PlayerGameStatDTO>> result = new LinkedHashMap<>();
+
+        int gameIndex = 1;
+
+        for (Game game : games) {
+            RankingDTO ranking = updateRanking(game.getGameId());
+
+            for (RankingEntryDTO entry : ranking.entries()) {
+
+                PlayerGameStatDTO dto = new PlayerGameStatDTO(
+                        entry.playerId(),
+                        entry.playerName(),
+                        gameIndex,
+                        entry.totalScore(),
+                        entry.rank()
+                );
+                result.computeIfAbsent(entry.playerId(), k -> new ArrayList<>()).add(dto);
+            }
+            gameIndex++;
+        }
+        return result;
+    }
+
+    // Return should be String/List<Player>/Group???
+    public List<Player> getCurrentPlayers(){
+        return new ArrayList<>(currentGroup.getPlayers());
+    }
+
+    public Group getGroup(Long groupId){
+        return groupService.getGroupById(groupId);
     }
 
     public PlayerInGame getCurrentPlayer() {
@@ -444,5 +534,7 @@ public class GameService {
     public PlayerInGame getPrevPlayer(){
         return previousPlayer;
     }
+
+    public void setNameByPlayerId(Long gameId, Long groupId) { nameByPlayerId = createPlayerNameMap(gameId, groupId); }
 
 }

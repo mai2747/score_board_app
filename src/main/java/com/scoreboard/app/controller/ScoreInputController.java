@@ -175,7 +175,7 @@ public class ScoreInputController implements ContextAwareController{
         if (!scoreField.getText().isBlank()){
             errorLabel.setText("Please submit your score");
             errorLabel.setVisible(true);
-        }else if(gameService.getScores().isEmpty()){
+        }else if(gameService.getCurrentScores().isEmpty()){
             errorLabel.setText("The game hasn't started yet");
             errorLabel.setVisible(true);
         }else{
@@ -336,7 +336,7 @@ public class ScoreInputController implements ContextAwareController{
 
     @FXML
     public void quitGame(){
-        if(!gameService.getScores().isEmpty()){
+        if(!gameService.getCurrentScores().isEmpty()){
             Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
             alert.setTitle("Confirm");
             alert.setHeaderText("Leave Game?");

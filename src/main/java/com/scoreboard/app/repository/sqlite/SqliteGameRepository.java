@@ -206,6 +206,43 @@ public class SqliteGameRepository implements GameRepository {
     }
 
     @Override
+    public List<Game> findRecentFinishedGamesByGroupId(Long groupId) {
+        String sql = """
+            SELECT game_id, group_id, status, rule_version, started_at
+            FROM games
+            WHERE status = 'FINISHED'
+              AND group_id = ?
+            ORDER BY started_at DESC
+            """;
+
+        List<Game> games = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, groupId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+
+                    Game game = new Game(
+                            rs.getLong("game_id"),
+                            rs.getLong("group_id"),
+                            DateTimeUtils.parse(rs.getString("started_at")),
+                            GameStatus.valueOf(rs.getString("status")),
+                            rs.getString("rule_version")
+                    );
+
+                    games.add(game);
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Find recent finished games failed", e);
+        }
+
+        return games;
+    }
+
+    @Override
     public boolean existsByStatus(GameStatus status) {
         String sql = "SELECT 1 FROM games WHERE status = ? LIMIT 1";
 

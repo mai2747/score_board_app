@@ -22,9 +22,9 @@ public class SqliteGroupRepository implements GroupRepository {
             throw new IllegalArgumentException("group is null");
         }
 
-        if(group.getGroupID() == null){
+        if(group.getGroupId() == null){
             long generatedId = insert(group);
-            group.setGroupID(generatedId);
+            group.setGroupId(generatedId);
         }else{
             throw new RuntimeException("Group ID is null");
         }

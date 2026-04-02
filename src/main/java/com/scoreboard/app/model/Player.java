@@ -5,8 +5,8 @@ package com.scoreboard.app.model;
 
 public class Player {
     private Long playerID;
-    private Long groupId;     // 所属グループ
-    private String name;      // 表示名
+    private Long groupId;
+    private String name;
 
     public Player(String name){
         this.name = name;
@@ -27,4 +27,8 @@ public class Player {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    @Override
+    public String toString(){
+        return name;
+    }
 }

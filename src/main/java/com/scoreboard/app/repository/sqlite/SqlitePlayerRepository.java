@@ -1,13 +1,11 @@
 package com.scoreboard.app.repository.sqlite;
 
-import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.Player;
 import com.scoreboard.app.repository.PlayerRepository;
+import com.scoreboard.app.viewmodel.PlayerWinRateDTO;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 public class SqlitePlayerRepository implements PlayerRepository {
     private final Connection conn;
@@ -153,5 +151,90 @@ public class SqlitePlayerRepository implements PlayerRepository {
         } catch (SQLException e) {
             throw new RuntimeException("Find player by group id and name failed", e);
         }
+    }
+
+    public Map<Long, PlayerWinRateDTO> findPlayerWinRatesByGroupId(Long groupId) {
+        String sql = """
+                    WITH player_game_total AS (
+                        SELECT
+                            pig.game_id,
+                            pig.player_id,
+                            SUM(s.score) AS total_score
+                        FROM players_in_game pig
+                        JOIN scores s
+                          ON s.player_in_game_id = pig.player_in_game_id
+                        JOIN games g
+                          ON g.game_id = pig.game_id
+                        WHERE g.status = 'FINISHED'
+                          AND g.group_id = ?
+                        GROUP BY pig.game_id, pig.player_id
+                    ),
+                    game_max_score AS (
+                        SELECT
+                            game_id,
+                            MAX(total_score) AS max_score
+                        FROM player_game_total
+                        GROUP BY game_id
+                    ),
+                    game_winners AS (
+                        SELECT
+                            pgt.game_id,
+                            pgt.player_id,
+                            CASE
+                                WHEN pgt.total_score = gms.max_score THEN 1
+                                ELSE 0
+                            END AS is_win
+                        FROM player_game_total pgt
+                        JOIN game_max_score gms
+                          ON pgt.game_id = gms.game_id
+                    ),
+                    player_stats AS (
+                        SELECT
+                            gw.player_id,
+                            COUNT(*) AS games_played,
+                            SUM(gw.is_win) AS wins,
+                            CAST(SUM(gw.is_win) AS REAL) / COUNT(*) AS win_rate
+                        FROM game_winners gw
+                        GROUP BY gw.player_id
+                    )
+                    SELECT
+                        p.player_id,
+                        p.display_name,
+                        COALESCE(ps.games_played, 0) AS games_played,
+                        COALESCE(ps.wins, 0) AS wins,
+                        CASE
+                            WHEN COALESCE(ps.games_played, 0) = 0 THEN 0.0
+                            ELSE ps.win_rate
+                        END AS win_rate
+                    FROM players p
+                    LEFT JOIN player_stats ps
+                      ON p.player_id = ps.player_id
+                    WHERE p.group_id = ?
+                    ORDER BY win_rate DESC, wins DESC, LOWER(p.display_name) ASC
+                    """;
+
+        Map<Long, PlayerWinRateDTO> resultMap = new HashMap<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, groupId);
+            stmt.setLong(2, groupId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    PlayerWinRateDTO dto = new PlayerWinRateDTO(
+                            rs.getLong("player_id"),
+                            rs.getString("display_name"),
+                            rs.getInt("games_played"),
+                            rs.getInt("wins"),
+                            rs.getDouble("win_rate")
+                    );
+                    resultMap.put(dto.playerId(), dto);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Failed to get player win rates", e);
+        }
+
+        return resultMap;
     }
 }

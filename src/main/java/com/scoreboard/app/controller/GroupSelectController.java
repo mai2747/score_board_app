@@ -52,7 +52,7 @@ public class GroupSelectController implements ContextAwareController{
     @FXML
     public void selectGroup(){
         Group selected = groupListView.getSelectionModel().getSelectedItem();
-        gameService.selectGroup(selected.getGroupID());
+        gameService.selectGroup(selected.getGroupId());
 
         ViewManager.switchTo("GameSetup.fxml");
     }

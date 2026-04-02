@@ -14,17 +14,13 @@ import java.util.Optional;
 // Delete "implements ContextAwareController" if this class does not use any Services
 public class MenuController implements ContextAwareController {
     @FXML Button selectGroupButton;
-    @FXML Button settingButton;
+    @FXML Button historyButton;
     @FXML Button pausedGameButton;
     @FXML VBox buttonVBox;
 
     boolean hasPausedGame;
     private GameService gameService;
 
-    @FXML
-    private void initialize(){
-        settingButton.setDisable(true);
-    }
 
     @Override
     public void setContext(AppContext context) {
@@ -73,5 +69,5 @@ public class MenuController implements ContextAwareController {
 
     @FXML void pausedGameTransition(){ ViewManager.switchTo("PausedGame.fxml"); }
 
-    @FXML void settingTransition(){ ViewManager.switchTo("Setting.fxml"); }
+    @FXML void historyTransition(){ ViewManager.switchTo("HistoryGroupSelect.fxml"); }
 }

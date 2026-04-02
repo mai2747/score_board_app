@@ -3,7 +3,6 @@ package com.scoreboard.app.model;
 import com.scoreboard.app.util.DateTimeUtils;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,20 +38,12 @@ public class Group {
         return name;
     }
 
-    public void setGroupID(Long groupID) { // Set by repository
+    public void setGroupId(Long groupID) { // Set by repository
         this.groupID = groupID;
     }
 
-    public Long getGroupID(){
+    public Long getGroupId(){
         return groupID;
-    }
-
-    public List<Long> getPlayerIDs(){
-        List<Long> playerIds = new ArrayList<>();
-        for (Player player: players){
-            playerIds.add(player.getId());
-        }
-        return playerIds;
     }
 
     public boolean isTemporary(){

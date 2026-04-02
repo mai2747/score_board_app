@@ -16,7 +16,7 @@
             <Button mnemonicParsing="false" onAction="#createGroupTransition" text="Create Group" />
             <Button fx:id="selectGroupButton" mnemonicParsing="false" onAction="#selectGroupTransition" text="Select Group" />
             <Button fx:id="pausedGameButton" mnemonicParsing="false" onAction="#pausedGameTransition" prefHeight="25.0" prefWidth="151.0" text="View Paused Game" />
-            <Button fx:id="settingButton" mnemonicParsing="false" onAction="#settingTransition" text="History" />
+            <Button fx:id="historyButton" mnemonicParsing="false" onAction="#historyTransition" text="History" />
          </children>
       </VBox>
    </children>

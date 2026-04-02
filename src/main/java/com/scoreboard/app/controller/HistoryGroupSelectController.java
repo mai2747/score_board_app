@@ -13,15 +13,17 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 
-public class HistoryController implements ContextAwareController{
+public class HistoryGroupSelectController implements ContextAwareController{
     @FXML private ListView<Group> groupListView;
     @FXML private ListView<Game> gameListView;
 
+    private AppContext context;
     private GameService gameService;
     private GroupService groupService;
 
     @Override
     public void setContext(AppContext context) {
+        this.context = context;
         this.gameService = context.gameService();
         this.groupService = context.groupService();
         putGroupList();
@@ -52,21 +54,12 @@ public class HistoryController implements ContextAwareController{
     }
 
     @FXML
-    public void groupClicked(){
-
-    }
-
-    @FXML
-    public void groupUnclicked(){
-
-    }
-
-    @FXML
     public void selectGroup(){
         Group selected = groupListView.getSelectionModel().getSelectedItem();
-        gameService.selectGroup(selected.getGroupID());
+        gameService.selectGroup(selected.getGroupId());
+        context.setSelectedGroupId(selected.getGroupId());
 
-        ViewManager.switchTo("GameSetup.fxml");
+        ViewManager.switchTo("GroupHistory.fxml");
     }
 
     @FXML
