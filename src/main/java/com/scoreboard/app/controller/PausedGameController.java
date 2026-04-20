@@ -12,6 +12,7 @@ import java.util.List;
 
 public class PausedGameController implements ContextAwareController{
     GameService gameService;
+    private AppContext context;
     private Long pausedGameId;
 
     @FXML private Label groupNameLabel;
@@ -29,6 +30,7 @@ public class PausedGameController implements ContextAwareController{
 
     @Override
     public void setContext(AppContext context) {
+        this.context = context;
         gameService = context.gameService();
         displayPausedGame();
     }
@@ -70,7 +72,7 @@ public class PausedGameController implements ContextAwareController{
 
     @FXML
     public void resumeGame(){
-        gameService.prepareAndResumeGame(pausedGameId);
+        context.setGamePlayContext(gameService.prepareAndResumeGame(pausedGameId));
         ViewManager.switchTo("ScoreInput.fxml");
     }
 

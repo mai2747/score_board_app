@@ -1,12 +1,28 @@
 PRAGMA foreign_keys = ON;
 
+CREATE TABLE IF NOT EXISTS accounts (
+account_id              INTEGER PRIMARY KEY AUTOINCREMENT,
+account_name            TEXT NOT NULL UNIQUE,
+password_hash           TEXT NOT NULL,
+security_question       TEXT NOT NULL,
+security_answer_hash    TEXT NOT NULL,
+failed_login_count      INTEGER NOT NULL DEFAULT 0,
+locked_until            TEXT,
+status                  TEXT NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE')),
+created_at              TEXT NOT NULL,
+last_activity_at        TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS groups (
 group_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+account_id      INTEGER NOT NULL,
 name            TEXT NOT NULL,
 is_temporary    INTEGER NOT NULL DEFAULT 0 CHECK (is_temporary IN (0, 1)),
 status          TEXT NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE')),
 created_at      TEXT NOT NULL,
-last_played_at TEXT
+last_played_at  TEXT,
+FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
+UNIQUE (account_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS players (
@@ -37,10 +53,10 @@ UNIQUE (game_id, turn_order)
 );
 
 CREATE TABLE IF NOT EXISTS scores (
-score_id         INTEGER PRIMARY KEY AUTOINCREMENT,
+score_id            INTEGER PRIMARY KEY AUTOINCREMENT,
 player_in_game_id   INTEGER NOT NULL,
-turn_number      INTEGER NOT NULL,
-score            INTEGER NOT NULL,
+turn_number         INTEGER NOT NULL,
+score               INTEGER NOT NULL,
 FOREIGN KEY (player_in_game_id) REFERENCES players_in_game(player_in_game_id) ON DELETE CASCADE,
 UNIQUE (player_in_game_id, turn_number)
 );

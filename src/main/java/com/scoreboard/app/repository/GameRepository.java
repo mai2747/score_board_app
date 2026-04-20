@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface GameRepository {
     Game save(Game game);
     void updateStatus(Long gameId, GameStatus newStatus);
-    long countByGroupId(Long groupId);
+    long getGameNumByGroupId(Long groupId);
     void deleteByGameId(Long gameId);
     void deleteByStatus(GameStatus status);
     Optional<Game> findById(Long gameId);

@@ -9,7 +9,7 @@ import java.util.*;
 
 public class RankingService {
 
-    public RankingDTO buildRanking(Long gameId, List<PlayerTotalScore> totals) {
+    public static RankingDTO buildRanking(Long gameId, List<PlayerTotalScore> totals) {
         List<PlayerTotalScore> sorted = new ArrayList<>(totals);
         sorted.sort(
                 Comparator.<PlayerTotalScore>comparingInt(PlayerTotalScore::totalScore)

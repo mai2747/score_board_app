@@ -17,9 +17,11 @@ public class GroupSelectController implements ContextAwareController{
 
     private GameService gameService;
     private GroupService groupService;
+    private AppContext context;
 
     @Override
     public void setContext(AppContext context) {
+        this.context = context;
         this.gameService = context.gameService();
         this.groupService = context.groupService();
         putGroupList();
@@ -52,7 +54,7 @@ public class GroupSelectController implements ContextAwareController{
     @FXML
     public void selectGroup(){
         Group selected = groupListView.getSelectionModel().getSelectedItem();
-        gameService.selectGroup(selected.getGroupId());
+        context.setSelectedGroupId(selected.getGroupId());
 
         ViewManager.switchTo("GameSetup.fxml");
     }

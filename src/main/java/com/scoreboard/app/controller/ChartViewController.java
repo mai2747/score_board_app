@@ -38,7 +38,7 @@ public class ChartViewController implements ContextAwareController{
         this.context = context;
 
         if(context.getSelectedGameId() != null && context.getSelectedGroupId() != null){
-            gameService.setNameByPlayerId(context.getSelectedGameId(), context.getSelectedGroupId());
+            //gameService.setNameByPlayerId(context.getSelectedGameId(), context.getSelectedGroupId());
             backToRankingsButton.setText("Back to History");
         }else{
             backToRankingsButton.setText("Back to Rankings");

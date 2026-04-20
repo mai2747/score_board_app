@@ -24,11 +24,13 @@ public class GameSetupController implements ContextAwareController{
 
     private ObservableList<Player> players;
     private GameService gameService;
+    private AppContext context;
 
     private ObservableList<String> playerNames;
 
     @Override
     public void setContext(AppContext context) {
+        this.context = context;
         gameService = context.gameService();
         putGroupInfo(); //testing
     }
@@ -47,7 +49,8 @@ public class GameSetupController implements ContextAwareController{
     }
 
     public void putGroupInfo() {
-        players = FXCollections.observableArrayList(gameService.getCurrentPlayers());
+        long groupId = context.getSelectedGroupId();
+        players = FXCollections.observableArrayList(gameService.getPlayersByGroupId(groupId));
 
         playerOrderListView.setItems(players);
 
@@ -103,8 +106,8 @@ public class GameSetupController implements ContextAwareController{
             totalSeconds = 0;
         }
 
-        gameService.createAndStartGame(orderedPlayerIds, showRankingsCheckBox.isSelected(), totalSeconds);
-
+        context.setGamePlayContext(gameService.createAndStartGame(
+                orderedPlayerIds, showRankingsCheckBox.isSelected(), totalSeconds));
         ViewManager.switchTo("ScoreInput.fxml");
     }
 

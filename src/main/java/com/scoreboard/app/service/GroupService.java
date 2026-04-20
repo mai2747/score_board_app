@@ -93,6 +93,10 @@ public class GroupService {
         return group;
     }
 
+    public List<Player> getPlayersByGroupId(Long groupId){
+        return playerRepository.findByGroupId(groupId);
+    }
+
     public String getGroupNameByGroupId(Long groupId){
         return groupRepository.findById(groupId)
                 .map(Group::getGroupName)

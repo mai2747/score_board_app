@@ -56,7 +56,7 @@ public class HistoryGroupSelectController implements ContextAwareController{
     @FXML
     public void selectGroup(){
         Group selected = groupListView.getSelectionModel().getSelectedItem();
-        gameService.selectGroup(selected.getGroupId());
+        //gameService.selectGroup(selected.getGroupId());
         context.setSelectedGroupId(selected.getGroupId());
 
         ViewManager.switchTo("GroupHistory.fxml");

@@ -13,4 +13,6 @@ public enum GameStatus {
     public boolean isPaused(){
         return this == PAUSED;
     }
+
+    public boolean isInProgress() { return this == IN_PROGRESS; }
 }

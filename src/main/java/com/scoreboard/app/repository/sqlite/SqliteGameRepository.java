@@ -81,7 +81,7 @@ public class SqliteGameRepository implements GameRepository {
     }
 
     @Override
-    public long countByGroupId(Long groupId) {
+    public long getGameNumByGroupId(Long groupId) {
         String sql = "SELECT COUNT(*) FROM games WHERE group_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){

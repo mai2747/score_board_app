@@ -179,7 +179,7 @@ public class ScoreInputController implements ContextAwareController{
             errorLabel.setText("The game hasn't started yet");
             errorLabel.setVisible(true);
         }else{
-            gameService.finishGame();
+            gameService.closeGame();
             ViewManager.switchTo("Result.fxml");
         }
     }
@@ -329,6 +329,7 @@ public class ScoreInputController implements ContextAwareController{
     @FXML
     public void saveAndReturnHome(){
         gameService.pauseGame();
+
         toggleTimer();
 
         ViewManager.switchTo("Menu.fxml");

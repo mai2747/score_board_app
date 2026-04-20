@@ -106,7 +106,7 @@ public class GroupHistoryController implements ContextAwareController{
         ObservableList<RankingDTO> rankingItems = FXCollections.observableArrayList();
 
         for (Game game : recentGames) {
-            RankingDTO ranking = gameService.updateRanking(game.getGameId());
+            RankingDTO ranking = gameService.calculateRanking(game.getGameId());
             rankingItems.add(ranking);
         }
 
