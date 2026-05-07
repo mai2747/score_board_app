@@ -17,14 +17,18 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 import javafx.util.Duration;
 import javafx.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
 
 public class ScoreInputController implements ContextAwareController{
+    private static final Logger logger = LoggerFactory.getLogger(ScoreInputController.class);
 
     @FXML private MenuItem resetTimerButton;
     @FXML private Label playerNameLabel;
@@ -112,7 +116,7 @@ public class ScoreInputController implements ContextAwareController{
 
         String name = nameAndRound.getKey();
         int round = nameAndRound.getValue();
-        System.out.println("|| Current player: " + name + " ||");
+        logger.info("Current player: {}", name);
 
         playerNameLabel.setText("Round " + round + " / " + name + " 's Turn");
         prevPlayerLabel.setText(gameService.getPrevPlayerName());
@@ -121,7 +125,8 @@ public class ScoreInputController implements ContextAwareController{
     private void updateRankingDisplay(){
         if(!currentRankingPane.isVisible()) return;
 
-        List<RankingEntryDTO> rankings = gameService.getCurrentRanking()
+        List<RankingEntryDTO> rankings = Optional.ofNullable(gameService.getCurrentRanking())
+                .orElse(Collections.emptyList())
                 .stream()
                 .sorted(Comparator.comparingInt(RankingEntryDTO::rank))
                 .toList();
@@ -314,7 +319,7 @@ public class ScoreInputController implements ContextAwareController{
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Could not open settings dialog.", e);
 
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");

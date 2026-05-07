@@ -27,7 +27,7 @@ public class App extends Application {
             // Pass main stage to ViewManager
             ViewManager.setStage(stage);
             ViewManager.setContext(context);
-            ViewManager.switchTo("Menu.fxml");
+            ViewManager.switchTo("AccountSelect.fxml");
 
 //            stage.setTitle("Scrabble Score Calculator");
 //            stage.show();
@@ -48,6 +48,6 @@ public class App extends Application {
     }
 
     public static void main(String[] args) {
-        launch(args); // JavaFX アプリ起動
+        launch(args); // JavaFX
     }
 }

@@ -4,7 +4,7 @@ package com.scoreboard.app.model;
 // Thus, not recording order in games. Player name can be edited by users.
 
 public class Player {
-    private Long playerID;
+    private Long playerId;
     private Long groupId;
     private String name;
 
@@ -13,13 +13,13 @@ public class Player {
     }
 
     public Player(Long playerId, Long groupId, String name){
-        this.playerID = playerId;
+        this.playerId = playerId;
         this.groupId = groupId;
         this.name = name;
     }
 
-    public Long getId() { return playerID; }
-    public void setId(Long id) { this.playerID = id; } // Should be used by repository（package-private）
+    public Long getId() { return playerId; }
+    public void setId(Long id) { this.playerId = id; } // Should be used by repository（package-private）
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }

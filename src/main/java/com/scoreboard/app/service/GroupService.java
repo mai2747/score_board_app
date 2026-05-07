@@ -1,5 +1,6 @@
 package com.scoreboard.app.service;
 
+import com.scoreboard.app.AppContext;
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.GroupStatus;
 import com.scoreboard.app.model.Player;
@@ -26,14 +27,14 @@ public class GroupService {
         this.pigRepository = pigRepository;
     }
 
-    public Group createGroup(List<String> names, boolean isTemporary){
+    public Group createGroup(Long accountId, List<String> names, boolean isTemporary){
         List<Player> players = new ArrayList<>();
 
         for (String playerName : names) {
             players.add(new Player(playerName));
         }
 
-        return new Group(players, isTemporary);
+        return new Group(accountId, players, isTemporary);
     }
 
     public void saveGroup(Group group) {

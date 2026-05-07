@@ -7,10 +7,14 @@ import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.viewmodel.*;
 import javafx.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class GameService {
+    private static final Logger logger = LoggerFactory.getLogger(GameService.class);
+
     private Group currentGroup;
     private GamePlayContext gamePlayContext;
 
@@ -32,25 +36,27 @@ public class GameService {
         rankingService = new RankingService();
     }
 
-    public void createNewGroup(List<String> names, String groupName, boolean isTemporary) {
-        currentGroup = groupService.createGroup(names, isTemporary);
+    public Group createNewGroup(Long accountId, List<String> names, String groupName, boolean isTemporary) {
+        currentGroup = groupService.createGroup(accountId, names, isTemporary);
 
-        System.out.println("Creating new group");
+        logger.info("Creating new group");
 
         if(!groupName.isBlank()) currentGroup.setGroupName(groupName);
         groupService.saveGroup(currentGroup);
+
+        return currentGroup;
     }
 
     public void setCurrentGroupById(Long groupID){
         currentGroup = groupService.getGroupById(groupID);
     }
 
-    public GamePlayContext createAndStartGame(List<Long> orderedIds, boolean enableTimer, int timerSeconds) {
-        System.out.println("--Start Refreshing Data--");
-        System.out.println();
+    public GamePlayContext createAndStartGame(Long groupId, List<Long> orderedIds, boolean enableTimer, int timerSeconds) {
+        logger.info("Start refreshing data");
 
         GameSettings gameSettings = createNewGameSettings(enableTimer, timerSeconds);
-        Game game = new Game(currentGroup.getGroupId(), gameSettings);
+        Game game = new Game(groupId, gameSettings);
+        setCurrentGroupById(groupId);
         gameRepository.save(game);
 
         List<PlayerInGame> orderedPlayers = groupService.registerPlayersInGame(
@@ -60,12 +66,15 @@ public class GameService {
         Map<Long, String> nameByPlayerId = createPlayerNameMapByPigId(game.getGameId(), currentGroup.getGroupId());
 
         for (PlayerInGame pig : orderedPlayers) {
-            System.out.println("PIG: playerId=" + pig.getPlayerId() + ", order=" + pig.getTurnOrder());
+            logger.debug("PIG: playerId={}, order={}", pig.getPlayerId(), pig.getTurnOrder());
         }
 
-        activateGroup();
+        GamePlayContext context = GamePlayContext.forNewGame(game, orderedPlayers, pigByPigId, nameByPlayerId);
+        setGamePlayContext(context);
 
-        return GamePlayContext.forNewGame(game, orderedPlayers, pigByPigId, nameByPlayerId);
+        cancelPausedGame();
+
+        return context;
     }
 
     public GamePlayContext prepareAndResumeGame(Long gameId){
@@ -213,7 +222,7 @@ public class GameService {
 
     public void setGamePlayContext(GamePlayContext context) {
         this.gamePlayContext = context;
-        // GamePlayServiceにも同じコンテキストを渡す
+        // Pass the same context to GamePlayService
         this.gamePlayService.setGamePlayContext(context);
     }
 

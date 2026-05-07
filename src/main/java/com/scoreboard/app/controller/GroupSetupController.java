@@ -1,6 +1,8 @@
 package com.scoreboard.app.controller;
 
+import com.scoreboard.app.App;
 import com.scoreboard.app.AppContext;
+import com.scoreboard.app.model.Group;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -11,11 +13,14 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class GroupSetupController implements ContextAwareController{
+    private static final Logger logger = LoggerFactory.getLogger(GroupSetupController.class);
 
     @FXML private TextField firstPlayerName;
     @FXML private TextField secondPlayerName;
@@ -31,17 +36,19 @@ public class GroupSetupController implements ContextAwareController{
     @FXML private Label errorLabel;
 
     private GameService gameService;
+    private AppContext context;
 
     @Override
     public void setContext(AppContext context){
         this.gameService = context.gameService();
+        this.context = context;
     }
 
     // Further implementation: "Create Group" -> Edit settings -> "Start Game"
     // This method respond to "Create Group"
     @FXML
     private void handleStartButton(ActionEvent event) {
-        System.out.println("Start button pressed!");
+        logger.info("Start button pressed");
 
         errorLabel.setText("");
 
@@ -66,13 +73,12 @@ public class GroupSetupController implements ContextAwareController{
             }
         }
 
-        // Debug
         for (int i = 0; i < playerNames.size(); i++) {
-            System.out.println("Player " + (i + 1) + "..." + playerNames.get(i));
+            logger.debug("Player {}: {}", i + 1, playerNames.get(i));
         }
-        System.out.println();
 
-        gameService.createNewGroup(playerNames, groupName.getText(), isTemporary.isSelected());
+        Group group = gameService.createNewGroup(context.requireAccountId(), playerNames, groupName.getText(), isTemporary.isSelected());
+        context.setSelectedGroupId(group.getGroupId());
         ViewManager.switchTo("GameSetup.fxml");
     }
 

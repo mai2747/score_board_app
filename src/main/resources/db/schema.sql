@@ -22,7 +22,7 @@ status          TEXT NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE')),
 created_at      TEXT NOT NULL,
 last_played_at  TEXT,
 FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
-UNIQUE (account_id, name)
+UNIQUE (account_id)
 );
 
 CREATE TABLE IF NOT EXISTS players (

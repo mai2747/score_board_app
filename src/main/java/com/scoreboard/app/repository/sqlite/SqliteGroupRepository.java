@@ -33,15 +33,16 @@ public class SqliteGroupRepository implements GroupRepository {
     }
 
     private long insert(Group group){
-        String sql = "INSERT INTO groups (name, is_temporary, status, created_at) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO groups (account_id, name, is_temporary, status, created_at) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt =
                      conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setString(1, group.getGroupName());
-            stmt.setInt(2, group.isTemporary() ? 1 : 0);
-            stmt.setString(3, group.getStatus().name());
-            stmt.setString(4, group.getCreatedTime());
+            stmt.setLong(1, group.getAccountId());
+            stmt.setString(2, group.getGroupName());
+            stmt.setInt(3, group.isTemporary() ? 1 : 0);
+            stmt.setString(4, group.getStatus().name());
+            stmt.setString(5, group.getCreatedTime());
 
             stmt.executeUpdate();
 

@@ -11,18 +11,20 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GroupSelectController implements ContextAwareController{
+    private static final Logger logger = LoggerFactory.getLogger(GroupSelectController.class);
+
     @FXML private ListView<Group> groupListView;
 
-    private GameService gameService;
     private GroupService groupService;
     private AppContext context;
 
     @Override
     public void setContext(AppContext context) {
         this.context = context;
-        this.gameService = context.gameService();
         this.groupService = context.groupService();
         putGroupList();
     }
@@ -56,11 +58,13 @@ public class GroupSelectController implements ContextAwareController{
         Group selected = groupListView.getSelectionModel().getSelectedItem();
         context.setSelectedGroupId(selected.getGroupId());
 
+        logger.info("{} is selected", selected.getGroupName());
         ViewManager.switchTo("GameSetup.fxml");
     }
 
     @FXML
     public void createNewGroup(){
+        logger.info("Create new group");
         ViewManager.switchTo("GroupSetup.fxml");
     }
 

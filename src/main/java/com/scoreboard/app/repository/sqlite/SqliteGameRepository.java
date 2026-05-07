@@ -38,7 +38,7 @@ public class SqliteGameRepository implements GameRepository {
             try (ResultSet rs = stmt.getGeneratedKeys()) {
                 if (rs.next()) {
                     long generatedId = rs.getLong(1);
-                    game.setGameID(generatedId);
+                    game.setGameId(generatedId);
                 } else {
                     throw new RuntimeException("Failed to get generated id");
                 }

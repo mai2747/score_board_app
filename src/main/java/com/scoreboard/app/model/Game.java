@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Game {
-    private Long gameID;
+    private Long gameId;
     private Long groupId; // Replace with groupID?
     private LocalDateTime startedAt;
     private GameStatus gameStatus;
@@ -28,7 +28,7 @@ public class Game {
     }
 
     public Game(long gameId, long groupId, LocalDateTime startedAt, GameStatus staus, String gameRule){
-        this.gameID = gameId;
+        this.gameId = gameId;
         this.groupId = groupId;
         this.startedAt = startedAt;
         this.gameStatus = staus;
@@ -40,8 +40,8 @@ public class Game {
     }
     public void setSettings(GameSettings gameSettings) { this.gameSettings = gameSettings; }
 
-    public Long getGameId() { return gameID; }
-    public void setGameID(Long id) { this.gameID = id; } // repositoryからのみ
+    public Long getGameId() { return gameId; }
+    public void setGameId(Long id) { this.gameId = id; } // repositoryからのみ
 
     public Long getGroupId() { return groupId; }
     public void setGroupId(Long groupId) { this.groupId = groupId; }

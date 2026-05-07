@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.scoreboard.app.controller.AccountSelectController">
+   <children>
+      <Label layoutX="183.0" layoutY="50.0" text="Scrabble Score Board">
+         <font>
+            <Font size="25.0" />
+         </font>
+      </Label>
+      <ListView fx:id="accountListView" layoutX="200.0" layoutY="149.0" prefHeight="159.0" prefWidth="200.0" />
+      <Label layoutX="237.0" layoutY="132.0" text="Select Account to Login" />
+      <Button layoutX="253.0" layoutY="322.0" mnemonicParsing="false" onAction="#selectAccount" text="Select Account" />
+      <Button layoutX="472.0" layoutY="322.0" mnemonicParsing="false" onAction="#createNewAccount" text="Create New" />
+      <Button layoutX="455.0" layoutY="361.0" mnemonicParsing="false" onAction="#loginAsGuest" text="Continue as Guest" />
+   </children>
+</AnchorPane>

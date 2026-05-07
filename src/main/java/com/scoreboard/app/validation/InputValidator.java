@@ -1,8 +1,11 @@
 package com.scoreboard.app.validation;
 
 import com.scoreboard.app.Exception.ValidationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class InputValidator {
+    private static final Logger logger = LoggerFactory.getLogger(InputValidator.class);
 
     private static final int SCORE_MIN = 0;
     private static final int SCORE_MAX = 999;
@@ -15,6 +18,12 @@ public final class InputValidator {
 
     private static final int ACCOUNT_NAME_MIN = 1;
     private static final int ACCOUNT_NAME_MAX = 30;
+
+    private static final int SECRET_QUESTION_ANSWER_MIN = 1;
+    private static final int SECRET_QUESTION_ANSWER_MAX = 50;
+
+    private static final int PASSWORD_MIN = 8;
+    private static final int PASSWORD_MAX = 64;
 
     private static final String NAME_PATTERN = "[A-Za-z0-9 _-]+";
 
@@ -58,9 +67,42 @@ public final class InputValidator {
         return validateName(input, ACCOUNT_NAME_MIN, ACCOUNT_NAME_MAX, "Account name");
     }
 
+    public static String validateSecretQuestionAnswer(String input) throws ValidationException {
+        return validateName(input, SECRET_QUESTION_ANSWER_MIN, SECRET_QUESTION_ANSWER_MAX, "Secret question answer");
+    }
+
+    public static String validatePassword(String input) throws ValidationException {
+        if (input == null) {
+            throw new ValidationException("Password is required.");
+        }
+
+        String trimmed = input.trim();
+        if (trimmed.isEmpty()) {
+            throw new ValidationException("Password is required.");
+        }
+        if (trimmed.length() < PASSWORD_MIN || trimmed.length() > PASSWORD_MAX) {
+            throw new ValidationException("Password must be between " + PASSWORD_MIN + " and " + PASSWORD_MAX + " characters.");
+        }
+        if (trimmed.contains(" ")) {
+            throw new ValidationException("Spaces are not allowed in password.");
+        }
+
+        return trimmed;
+    }
+
+    public static String validatePasswordConfirmation(String input, String password) throws ValidationException {
+        String validatedConfirmation = validatePassword(input);
+
+        if (!validatedConfirmation.equals(password)) {
+            throw new ValidationException("Password confirmation does not match.");
+        }
+
+        return validatedConfirmation;
+    }
+
     private static String validateName(String input, int min, int max, String fieldName) throws ValidationException {
         if (input == null) {
-            System.out.println(fieldName + " is set as a default");
+            logger.debug("{} is set as a default", fieldName);
             return null;
         }
 

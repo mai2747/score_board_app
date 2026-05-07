@@ -1,5 +1,8 @@
 package com.scoreboard.app.db;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -9,25 +12,25 @@ import java.sql.Statement;
 import java.util.stream.Collectors;
 
 public class DatabaseInitialiser {
+    private static final Logger logger = LoggerFactory.getLogger(DatabaseInitialiser.class);
 
     public static void initialise(Connection connection) {
         try {
             String sql = loadSchema();
 
             try (Statement stmt = connection.createStatement()) {
-                System.out.println("Initialising Database");
+                logger.info("Initialising database");
 
                 for (String s : sql.split(";")) {
                     String trimmed = s.trim();
                     if (!trimmed.isEmpty()) {
-                        System.out.println("Executing SQL:\n" + trimmed);
+                        logger.debug("Executing SQL: {}", trimmed);
                         stmt.execute(trimmed);
                     }
                 }
             }
 
-            System.out.println("...Completed!");
-            System.out.println();
+            logger.info("Database initialisation completed");
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize database", e);

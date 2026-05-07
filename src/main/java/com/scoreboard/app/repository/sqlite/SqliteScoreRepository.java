@@ -3,6 +3,8 @@ package com.scoreboard.app.repository.sqlite;
 import com.scoreboard.app.model.Score;
 import com.scoreboard.app.repository.ScoreRepository;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,6 +12,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class SqliteScoreRepository implements ScoreRepository {
+    private static final Logger logger = LoggerFactory.getLogger(SqliteScoreRepository.class);
+
     private final Connection conn;
 
     public SqliteScoreRepository(Connection conn){
@@ -37,6 +41,12 @@ public class SqliteScoreRepository implements ScoreRepository {
             stmt.setLong(1, score.getPlayerInGameId());
             stmt.setInt(2, score.getTurnNumber());
             stmt.setInt(3, score.getScore());
+
+            logger.debug(
+                    "Trying to save score for player_in_game_id: {}, turn number: {}",
+                    score.getPlayerInGameId(),
+                    score.getTurnNumber()
+            );
 
             stmt.executeUpdate();
 

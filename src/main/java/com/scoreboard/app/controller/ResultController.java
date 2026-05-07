@@ -7,10 +7,14 @@ import com.scoreboard.app.view.ViewManager;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class ResultController implements ContextAwareController{
+    private static final Logger logger = LoggerFactory.getLogger(ResultController.class);
+
     @FXML private Label endingPhrase;
     @FXML private Label firstRank;
     @FXML private Label secondRank;
@@ -41,7 +45,7 @@ public class ResultController implements ContextAwareController{
     }
 
     private void renderRanking() {
-        System.out.println("|| Game Finished ||");
+        logger.info("Game finished");
         List<RankingEntryDTO> ranking = gameService.getCurrentRanking(); // assume
 
         int n = (ranking == null) ? 0 : ranking.size();
@@ -56,7 +60,7 @@ public class ResultController implements ContextAwareController{
                 rankLabels.get(i).setText((i+1) + ". " + e.playerName());
                 scoreLabels.get(i).setText(String.valueOf(e.totalScore()));
 
-                System.out.println((i+1) + "." + e.playerName() + ": " + e.totalScore());
+                logger.info("Rank {}. {}: {}", i + 1, e.playerName(), e.totalScore());
             } else {
                 rankLabels.get(i).setText("-");
                 scoreLabels.get(i).setText("-");

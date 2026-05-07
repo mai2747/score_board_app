@@ -7,14 +7,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Group {
-    private Long groupID;
-    private String name;          // グループ名
+    private Long groupId;
+    private Long accountId;
+    private String name;
     private boolean isTemporary;
     private GroupStatus status;
     private String createdAt;
     private List<Player> players;
 
-    public Group(List<Player> players, boolean isTemporary){
+    // Constructor for creating new Group
+    public Group(Long accountId, List<Player> players, boolean isTemporary){
+        this.accountId = accountId;
         this.players = players;
         this.isTemporary = isTemporary;
         status = GroupStatus.DRAFT;
@@ -22,13 +25,16 @@ public class Group {
         name = "Group [" + createdAt + "]" ;  // Default name
     }
 
-    public Group(Long groupID, String name, boolean isTemporary, String createdAt) {
-        this.groupID = groupID;
+    // Constructor for obtaining from DB
+    public Group(Long groupId, String name, boolean isTemporary, String createdAt) {
+        this.groupId = groupId;
         this.name = name;
         this.isTemporary = isTemporary;
         this.createdAt = createdAt;
         this.players = new ArrayList<>();
     }
+
+    public Long getAccountId(){ return accountId; }
 
     public void setGroupName(String groupName){
         name = groupName;
@@ -39,11 +45,11 @@ public class Group {
     }
 
     public void setGroupId(Long groupID) { // Set by repository
-        this.groupID = groupID;
+        this.groupId = groupID;
     }
 
     public Long getGroupId(){
-        return groupID;
+        return groupId;
     }
 
     public boolean isTemporary(){

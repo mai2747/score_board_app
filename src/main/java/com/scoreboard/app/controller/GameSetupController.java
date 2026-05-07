@@ -107,7 +107,8 @@ public class GameSetupController implements ContextAwareController{
         }
 
         context.setGamePlayContext(gameService.createAndStartGame(
-                orderedPlayerIds, showRankingsCheckBox.isSelected(), totalSeconds));
+                context.getSelectedGroupId(), orderedPlayerIds, showRankingsCheckBox.isSelected(), totalSeconds));
+        gameService.activateGroup();
         ViewManager.switchTo("ScoreInput.fxml");
     }
 

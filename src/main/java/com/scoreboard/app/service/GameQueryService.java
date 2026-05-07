@@ -3,12 +3,16 @@ package com.scoreboard.app.service;
 import com.scoreboard.app.model.*;
 import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class GameQueryService {
+    private static final Logger logger = LoggerFactory.getLogger(GameQueryService.class);
+
     private GroupService groupService;
     private GameRepository gameRepository;
 
@@ -33,13 +37,13 @@ public class GameQueryService {
         Map<Long, String> nameByPigId = new HashMap<>();
         Map<Long, String> nameByID = new HashMap<>();
 
-        System.out.println("Creating Player-Name Map");
+        logger.debug("Creating player-name map");
 
         List<PlayerInGame> pigs = groupService.findPlayersByGameId(gameId);
         Group group = groupService.getGroupById(groupId);
         for (Player player : group.getPlayers()) {
             nameByID.put(player.getId(), player.getName());
-            System.out.println("ID -> " + player.getId() + " / Name -> " + player);
+            logger.debug("ID -> {} / Name -> {}", player.getId(), player);
         }
 
         for (PlayerInGame pig : pigs) {
@@ -50,11 +54,7 @@ public class GameQueryService {
 
             nameByPigId.put(pigId, name);
 
-            System.out.println(
-                    "pigId -> " + pigId +
-                            " / playerId -> " + playerId +
-                            " / name -> " + name
-            );
+            logger.debug("pigId -> {} / playerId -> {} / name -> {}", pigId, playerId, name);
         }
         return nameByPigId;
     }

@@ -11,12 +11,13 @@
             <Font name="Arial" size="24.0" />
          </font>
       </Label>
-      <VBox fx:id="buttonVBox" alignment="CENTER" layoutX="226.0" layoutY="200.0" prefHeight="183.0" prefWidth="149.0" spacing="15">
+      <VBox fx:id="buttonVBox" alignment="CENTER" layoutX="180.0" layoutY="200.0" prefHeight="185.0" prefWidth="240.0" spacing="15">
          <children>
             <Button mnemonicParsing="false" onAction="#createGroupTransition" text="Create Group" />
             <Button fx:id="selectGroupButton" mnemonicParsing="false" onAction="#selectGroupTransition" text="Select Group" />
-            <Button fx:id="pausedGameButton" mnemonicParsing="false" onAction="#pausedGameTransition" prefHeight="25.0" prefWidth="151.0" text="View Paused Game" />
+            <Button fx:id="pausedGameButton" mnemonicParsing="false" onAction="#pausedGameTransition" prefHeight="25.0" prefWidth="253.0" text="View Paused Game" />
             <Button fx:id="historyButton" mnemonicParsing="false" onAction="#historyTransition" text="History" />
+            <Button mnemonicParsing="false" onAction="#logout" text="Logout" />
          </children>
       </VBox>
    </children>

@@ -8,12 +8,16 @@ import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import com.scoreboard.app.viewmodel.RankingDTO;
 import com.scoreboard.app.viewmodel.RankingEntryDTO;
 import javafx.util.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 public class GamePlayService {
+    private static final Logger logger = LoggerFactory.getLogger(GamePlayService.class);
+
     private GroupService groupService;
     private ScoreService scoreService;
     private GameQueryService gameQueryService;
@@ -30,7 +34,6 @@ public class GamePlayService {
     private Score previousScore;
 
     public int currentTurnIndex = 1;
-    private int consecutiveZeroCount = 0;
 
     public GamePlayService(GroupService groupService, ScoreService scoreService, GameQueryService gameQueryService){
         this.groupService = groupService;
@@ -48,14 +51,14 @@ public class GamePlayService {
         requireContext();
 
         int input = InputValidator.validateScore(scoreInField);
-        System.out.println("Score submitted: " + input);
+        logger.info("Score submitted: {}", input);
 
         if (isConsecutiveZero(input)) {
             closeGame();
             return;
         }
 
-        Score score = new Score(null, currentPlayer.getPigId(), currentTurnIndex, input);
+        Score score = new Score(null, context.getCurrentPlayer().getPigId(), context.getCurrentTurnIndex(), input);
         scoreService.saveScore(score);
         afterScoreChanged(true);
 
@@ -68,14 +71,14 @@ public class GamePlayService {
         int input = InputValidator.validateScore(scoreInField);
         Score prevScore = context.getPreviousScore();
 
-        System.out.println("Previous score is edited: " + prevScore + " -> " + input);
+        logger.info("Previous score is edited: {} -> {}", prevScore, input);
 
         if (isConsecutiveZero(input)) {
             closeGame();
             return;
         }
 
-        System.out.println("PrevScore ID: " + prevScore.getScoreId());
+        logger.debug("Previous score ID: {}", prevScore.getScoreId());
         scoreService.editPrevScore(prevScore, input);
         afterScoreChanged(false);
     }
@@ -94,14 +97,17 @@ public class GamePlayService {
     private boolean isConsecutiveZero(int score) {
         if (score == 0) {
             context.incrementZeroCount();
-            System.out.println("Score 0 was submitted (" + context.getConsecutiveZeroCount() +
-                                "/" + context.getConsecutiveZeroThreshold() + ")");
+            logger.info(
+                    "Score 0 was submitted ({}/{})",
+                    context.getConsecutiveZeroCount(),
+                    context.getConsecutiveZeroThreshold()
+            );
             return context.shouldEndDueToConsecutiveZeros();
         }
 
         // non-zero breaks consecutive zeros
         if (context.getConsecutiveZeroCount() > 0) {
-            System.out.println("Zero streak reset");
+            logger.info("Zero streak reset");
             context.resetZeroCount();
         }
         return false;
@@ -118,7 +124,7 @@ public class GamePlayService {
 
     public void closeGame() {
         requireContext();
-        System.out.println("---Game ends due to consecutive zeros---");
+        logger.info("Game ends due to consecutive zeros");
         finishGame();
     }
 
@@ -188,7 +194,9 @@ public class GamePlayService {
 
     public List<RankingEntryDTO> getCurrentRanking(){
         requireContext();
-        return context.getCurrentRanking().entries();
+
+        if (context.getCurrentRanking() != null) return context.getCurrentRanking().entries();
+        else return null;
     }
 
     public List<Score> getCurrentScores(){
