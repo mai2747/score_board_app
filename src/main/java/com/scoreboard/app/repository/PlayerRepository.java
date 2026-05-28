@@ -8,6 +8,8 @@ import java.util.Map;
 import java.util.Optional;
 
 public interface PlayerRepository {
+    void setCurrentAccountId(Long accountId);
+    
     long reserveId();
     Player save(Player player);                 // insert or update
     void update(Player player);

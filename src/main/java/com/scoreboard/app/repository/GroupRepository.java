@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GroupRepository {
+    void setCurrentAccountId(Long accountId);
+    
     Group save(Group group);                    // insert or update
     void delete(Long groupId);
     Optional<Group> findById(Long groupId);

@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface GameRepository {
+    void setCurrentAccountId(Long accountId);
+    
     Game save(Game game);
     void updateStatus(Long gameId, GameStatus newStatus);
     long getGameNumByGroupId(Long groupId);

@@ -10,6 +10,7 @@ import java.util.Optional;
 // production environments using databases, and the potential future use of APIs
 
 public interface ScoreRepository {
+    void setCurrentAccountId(Long accountId);
 
     void save(Score score); // INSERT
     void update(Score score); // UPDATE
