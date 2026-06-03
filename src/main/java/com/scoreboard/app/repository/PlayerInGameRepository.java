@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface PlayerInGameRepository {
+    void setCurrentAccountId(Long accountId);
+    
     PlayerInGame save(PlayerInGame pig);
     Optional<PlayerInGame> findById(Long playerInGameId);
     List<PlayerInGame> findPlayersByGameId(Long gameId);

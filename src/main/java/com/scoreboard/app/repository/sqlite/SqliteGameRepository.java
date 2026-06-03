@@ -12,11 +12,16 @@ import java.util.Optional;
 
 public class SqliteGameRepository implements GameRepository {
     private final Connection conn;
+    private Long currentAccountId;
 
     public SqliteGameRepository(Connection conn){
         this.conn = conn;
     }
 
+    @Override
+    public void setCurrentAccountId(Long accountId) {
+        this.currentAccountId = accountId;
+    }
 
     @Override
     public Game save(Game game) {
@@ -53,12 +58,13 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public void updateStatus(Long gameId, GameStatus newStatus){
-        String sql = "UPDATE games SET status = ? WHERE game_id = ?";
+        String sql = "UPDATE games SET status = ? WHERE game_id = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, newStatus.name());
             stmt.setLong(2, gameId);
+            stmt.setLong(3, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -69,11 +75,12 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public void updateStatusByCurrentStatus(GameStatus from, GameStatus to) {
-        String sql = "UPDATE games SET status = ? WHERE status = ?";
+        String sql = "UPDATE games SET status = ? WHERE status = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, to.name());
             stmt.setString(2, from.name());
+            stmt.setLong(3, currentAccountId);
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Bulk update game status failed", e);
@@ -82,10 +89,11 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public long getGameNumByGroupId(Long groupId) {
-        String sql = "SELECT COUNT(*) FROM games WHERE group_id = ?";
+        String sql = "SELECT COUNT(*) FROM games WHERE group_id = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1,groupId);
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()){
                 rs.next();
@@ -98,10 +106,11 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public void deleteByGameId(Long gameId) {
-        String sql = "DELETE FROM games WHERE game_id = ?";
+        String sql = "DELETE FROM games WHERE game_id = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1, gameId);
+            stmt.setLong(2, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -112,10 +121,11 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public void deleteByStatus(GameStatus status) {
-        String sql = "DELETE FROM games WHERE status = ?";
+        String sql = "DELETE FROM games WHERE status = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, status.name());
+            stmt.setLong(2, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -126,10 +136,11 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public Optional<Game> findById(Long id) {
-        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE game_id = ?";
+        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE game_id = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -151,11 +162,12 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public List<Game> findAll() {
-        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games";
+        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         List<Game> games = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setLong(1, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()){
 
@@ -179,12 +191,13 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public List<Game> findAllByStatus(GameStatus status) {
-        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE status = ?";
+        String sql = "SELECT game_id, group_id, started_at, status, rule_version FROM games WHERE status = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
 
         List<Game> games = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status.name());
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -212,6 +225,7 @@ public class SqliteGameRepository implements GameRepository {
             FROM games
             WHERE status = 'FINISHED'
               AND group_id = ?
+              AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)
             ORDER BY started_at DESC
             """;
 
@@ -219,6 +233,7 @@ public class SqliteGameRepository implements GameRepository {
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, groupId);
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {
@@ -244,10 +259,11 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public boolean existsByStatus(GameStatus status) {
-        String sql = "SELECT 1 FROM games WHERE status = ? LIMIT 1";
+        String sql = "SELECT 1 FROM games WHERE status = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?) LIMIT 1";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, status.name());
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 return rs.next();

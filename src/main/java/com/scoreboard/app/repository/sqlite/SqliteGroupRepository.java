@@ -11,9 +11,15 @@ import java.util.Optional;
 
 public class SqliteGroupRepository implements GroupRepository {
     private final Connection conn;
+    private Long currentAccountId;
 
     public SqliteGroupRepository(Connection conn){
         this.conn = conn;
+    }
+
+    @Override
+    public void setCurrentAccountId(Long accountId) {
+        this.currentAccountId = accountId;
     }
 
     @Override
@@ -60,11 +66,12 @@ public class SqliteGroupRepository implements GroupRepository {
     }
 
     public void rename(Long groupId, String newName){
-        String sql = "UPDATE groups SET name = ? WHERE group_id = ?";
+        String sql = "UPDATE groups SET name = ? WHERE group_id = ? AND account_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, newName);
             stmt.setLong(2, groupId);
+            stmt.setLong(3, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -74,11 +81,12 @@ public class SqliteGroupRepository implements GroupRepository {
     }
 
     public void updateStatus(Long groupId, GroupStatus status){
-        String sql = "UPDATE groups SET status = ? WHERE group_id = ?";
+        String sql = "UPDATE groups SET status = ? WHERE group_id = ? AND account_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, status.name());
             stmt.setLong(2, groupId);
+            stmt.setLong(3, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -88,11 +96,12 @@ public class SqliteGroupRepository implements GroupRepository {
     }
 
     public void updateLastPlayedAt(Long groupId, String lastPlayedAt){
-        String sql = "UPDATE groups SET last_played_at = ? WHERE group_id = ?";
+        String sql = "UPDATE groups SET last_played_at = ? WHERE group_id = ? AND account_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, lastPlayedAt);
             stmt.setLong(2, groupId);
+            stmt.setLong(3, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -103,10 +112,11 @@ public class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public void delete(Long groupId) {
-        String sql = "DELETE FROM groups WHERE group_id = ?";
+        String sql = "DELETE FROM groups WHERE group_id = ? AND account_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1, groupId);
+            stmt.setLong(2, currentAccountId);
 
             stmt.executeUpdate();
 
@@ -116,10 +126,11 @@ public class SqliteGroupRepository implements GroupRepository {
     }
 
     public void deleteDraftGroupsOlderThan(String threshold) {
-        String sql = "DELETE FROM groups WHERE status = 'DRAFT' AND created_at < ?";
+        String sql = "DELETE FROM groups WHERE status = 'DRAFT' AND created_at < ? AND account_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, threshold);
+            stmt.setLong(2, currentAccountId);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -129,7 +140,7 @@ public class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public Optional<Group> findById(Long id) {
-        String sql = "SELECT group_id, name, is_temporary, created_at FROM groups WHERE group_id = ?";
+        String sql = "SELECT group_id, name, is_temporary, created_at FROM groups WHERE group_id = ? AND account_id = ?";
 
         if (id == null) {
             throw new IllegalArgumentException("id is null");
@@ -137,7 +148,7 @@ public class SqliteGroupRepository implements GroupRepository {
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
-
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
@@ -159,27 +170,29 @@ public class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public List<Group> findAll() {
-        String sql = "SELECT group_id, name, is_temporary, created_at FROM groups";
+        String sql = "SELECT group_id, name, is_temporary, created_at FROM groups WHERE account_id = ?";
 
         List<Group> groups = new ArrayList<>();
 
-        try (PreparedStatement stmt = conn.prepareStatement(sql);
-             ResultSet rs = stmt.executeQuery()) {
+        try (PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setLong(1, currentAccountId);
+            try (ResultSet rs = stmt.executeQuery()) {
 
-            while (rs.next()) {
+                while (rs.next()) {
 
-                Group group = new Group(
-                        rs.getLong("group_id"),
-                        rs.getString("name"),
-                        rs.getBoolean("is_temporary"),
-                        rs.getString("created_at")
-                );
+                    Group group = new Group(
+                            rs.getLong("group_id"),
+                            rs.getString("name"),
+                            rs.getBoolean("is_temporary"),
+                            rs.getString("created_at")
+                    );
 
-                groups.add(group);
+                    groups.add(group);
+                }
+
+                return groups;
+
             }
-
-            return groups;
-
         } catch (SQLException e) {
             throw new RuntimeException("Find all groups failed", e);
         }
@@ -187,11 +200,11 @@ public class SqliteGroupRepository implements GroupRepository {
 
     @Override
     public String getGroupNameByGameId(Long gameId) {
-        String sql = "SELECT name FROM groups WHERE game_id = ?";
-
+        String sql = "SELECT g.name FROM groups g JOIN games gm ON g.group_id = gm.group_id WHERE gm.game_id = ? AND g.account_id = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, gameId);
+            stmt.setLong(2, currentAccountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
