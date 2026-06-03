@@ -1,17 +1,21 @@
 package com.scoreboard.app.service;
 
 import com.scoreboard.app.model.Account;
+import com.scoreboard.app.model.SecurityQuestion;
 import com.scoreboard.app.repository.AccountRepository;
+import com.scoreboard.app.repository.SecurityQuestionRepository;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.List;
 
 public class AuthService {
     AccountRepository accountRepository;
+    SecurityQuestionRepository securityQuestionRepository;
     private static final int BCRYPT_COST_FACTOR = 12;
 
-    public AuthService(AccountRepository accountRepository){
+    public AuthService(AccountRepository accountRepository, SecurityQuestionRepository securityQuestionRepository){
         this.accountRepository = accountRepository;
+        this.securityQuestionRepository = securityQuestionRepository;
     }
 
     public Account createGuestAccount(){
@@ -64,6 +68,10 @@ public class AuthService {
         } catch (IllegalArgumentException e) {
             return false;
         }
+    }
+
+    public List<SecurityQuestion> getSecurityQuestions() {
+        return securityQuestionRepository.findAll();
     }
 
     public List<Account> getAllAccount(){

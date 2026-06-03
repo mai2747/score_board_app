@@ -3,13 +3,17 @@ package com.scoreboard.app.controller;
 import com.scoreboard.app.AppContext;
 import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.Account;
+import com.scoreboard.app.model.SecurityQuestion;
 import com.scoreboard.app.service.AuthService;
 import com.scoreboard.app.validation.InputValidator;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+
+import java.util.List;
 
 public class AccountSetupController implements ContextAwareController{
     AuthService authService;
@@ -19,11 +23,14 @@ public class AccountSetupController implements ContextAwareController{
     @FXML private TextField passwordTextField;
     @FXML private TextField passwordConfirmationTextField;
     @FXML private Label errorLabel;
+    @FXML private ChoiceBox<SecurityQuestion> questionChoiceBox;
 
     @Override
     public void setContext(AppContext context) {
         this.authService = context.authService();
         this.context = context;
+
+        loadQuestions();
     }
 
     @FXML
@@ -41,8 +48,17 @@ public class AccountSetupController implements ContextAwareController{
         }
     }
 
+    // TODO: validate it, currently this method just create Account model
     private Account validateInputs() throws ValidationException {
+        SecurityQuestion selected = questionChoiceBox.getValue();
+
+        if (selected == null) {
+            // 未選択エラー
+            return null;
+        }
+
         String accountName = requireText(accountNameTextField, "Account name");
+        int questionId = selected.getId();
         String secretQuestionAnswer = requireText(secretQuestionTextField, "Secret question answer");
         String password = requireText(passwordTextField, "Password");
         String passwordConfirmation = requireText(passwordConfirmationTextField, "Password confirmation");
@@ -56,7 +72,7 @@ public class AccountSetupController implements ContextAwareController{
         return new Account(
                 validatedAccountName,
                 authService.hashPassword(validatedPassword),
-                "What is your family name?",  // default
+                questionId,  // default
                 authService.hashSecurityAnswer(validatedSecretQuestionAnswer)
         );
     }
@@ -71,6 +87,12 @@ public class AccountSetupController implements ContextAwareController{
         }
 
         return text;
+    }
+
+    private void loadQuestions() {
+        List<SecurityQuestion> questions = authService.getSecurityQuestions();
+        questionChoiceBox.getItems().addAll(questions);
+        questionChoiceBox.getSelectionModel().selectFirst(); // 初期選択
     }
 
     private void showValidationError(String message) {

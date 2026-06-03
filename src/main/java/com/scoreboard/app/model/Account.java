@@ -8,7 +8,7 @@ public class Account {
     private String name;
     private Long accountId;
     private String password;
-    private String secretQuestion;
+    private int secretQuestion;
     private String secretAnswer;
     private String createdAt;
     private String lastActivityAt;
@@ -25,7 +25,7 @@ public class Account {
         this.accountId = accountId;
     }
 
-    public Account(String name, String password, String secretQuestion, String secretAnswer){
+    public Account(String name, String password, int secretQuestion, String secretAnswer){
         this.name = name;
         this.password = password;  // TODO: make this secure
         this.secretQuestion = secretQuestion;
@@ -51,10 +51,8 @@ public class Account {
         return password;
     }
 
-    public void setSecretQuestion(String secretQuestion) {
-        this.secretQuestion = secretQuestion;
-    }
-    public String getSecretQuestion() {
+    public void setSecretQuestion(int secretQuestion) { this.secretQuestion = secretQuestion; }
+    public int getSecretQuestion() {
         return secretQuestion;
     }
 

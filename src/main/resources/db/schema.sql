@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS accounts (
 account_id              INTEGER PRIMARY KEY AUTOINCREMENT,
 account_name            TEXT NOT NULL UNIQUE,
 password_hash           TEXT NOT NULL,
-security_question       TEXT NOT NULL,
+security_question_id    INTEGER NOT NULL REFERENCES security_questions(question_id),
 security_answer_hash    TEXT NOT NULL,
 failed_login_count      INTEGER NOT NULL DEFAULT 0,
 locked_until            TEXT,
@@ -62,6 +62,11 @@ turn_number         INTEGER NOT NULL,
 score               INTEGER NOT NULL,
 FOREIGN KEY (player_in_game_id) REFERENCES players_in_game(player_in_game_id) ON DELETE CASCADE,
 UNIQUE (player_in_game_id, turn_number)
+);
+
+CREATE TABLE IF NOT EXISTS security_questions (
+question_id   INTEGER PRIMARY KEY,
+question_text TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_players_group_id

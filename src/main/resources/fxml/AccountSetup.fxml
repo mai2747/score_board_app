@@ -11,8 +11,8 @@
       <Label layoutX="70.0" layoutY="116.0" text="Account Name" />
       <VBox layoutX="70.0" layoutY="193.0" prefHeight="101.0" prefWidth="200.0" spacing="5">
          <children>
-            <Label prefHeight="17.0" prefWidth="89.0" text="Secreat question" />
-            <Label text="Q. What is your family name?" />
+            <Label prefHeight="17.0" prefWidth="89.0" text="Secret question" />
+            <ChoiceBox fx:id="questionChoiceBox" prefWidth="150.0" />
             <TextField fx:id="secretQuestionTextField" promptText="Answer" />
          </children></VBox>
       <VBox layoutX="340.0" layoutY="116.0" prefHeight="200.0" prefWidth="208.0" spacing="20">

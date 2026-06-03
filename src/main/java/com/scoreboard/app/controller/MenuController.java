@@ -8,6 +8,8 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ public class MenuController implements ContextAwareController {
     @FXML Button historyButton;
     @FXML Button pausedGameButton;
     @FXML VBox buttonVBox;
+    @FXML Label accountNameLabel;
 
     boolean hasPausedGame;
     private GameService gameService;
@@ -32,6 +35,9 @@ public class MenuController implements ContextAwareController {
         gameService = context.gameService();
         this.context = context;
 
+        String accountName = context.requireAccount().getName();
+        accountNameLabel.setText(accountName);
+
         refreshPausedGameState();
     }
 
@@ -41,6 +47,7 @@ public class MenuController implements ContextAwareController {
         logger.debug("Having paused games? {}", hasPausedGame);
 
         if (hasPausedGame) {
+            pausedGameButton.setMinWidth(Region.USE_PREF_SIZE);
             pausedGameButton.setText(pausedGameName + "'s game is paused, resume?");
         }
 
@@ -78,6 +85,17 @@ public class MenuController implements ContextAwareController {
     @FXML void historyTransition(){ ViewManager.switchTo("HistoryGroupSelect.fxml"); }
 
     @FXML void logout(){
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Confirm");
+        alert.setHeaderText("Logout?");
+        alert.setContentText("Push OK to back to account selection page.");
+
+        Optional<ButtonType> result = alert.showAndWait();
+
+        if (result.isEmpty() || result.get() != ButtonType.OK) {
+            return;
+        }
+
         context.logout();
         ViewManager.switchTo("AccountSelect.fxml");
     }

@@ -24,6 +24,7 @@ public final class AppContext {
     private final ScoreRepository scoreRepository;
     private final PlayerInGameRepository pigRepository;
     private final AccountRepository accountRepository;  // ← 追加
+    private final SecurityQuestionRepository securityQuestionRepository;
 
     private final ScoreService scoreService;
     private final GroupService groupService;
@@ -48,8 +49,9 @@ public final class AppContext {
         this.gameRepository = new SqliteGameRepository(conn);
         this.pigRepository = new SqlitePlayerInGameRepository(conn);
         this.accountRepository = new SqliteAccountRepository(conn);
+        this.securityQuestionRepository = new SqliteSecurityQuestionRepository(conn);
 
-        this.authService = new AuthService(accountRepository);
+        this.authService = new AuthService(accountRepository, securityQuestionRepository);
         this.scoreService = new ScoreService(scoreRepository);
         this.groupService = new GroupService(playerRepository, groupRepository, pigRepository);
         this.maintenanceService = new MaintenanceService(groupService, gameRepository);

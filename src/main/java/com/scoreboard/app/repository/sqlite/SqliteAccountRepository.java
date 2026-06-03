@@ -34,14 +34,14 @@ public class SqliteAccountRepository implements AccountRepository {
     }
 
     private Long insert(Account account) {
-        String sql = "INSERT INTO accounts (account_name, password_hash, security_question, security_answer_hash, status, created_at, last_activity_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO accounts (account_name, password_hash, security_question_id, security_answer_hash, status, created_at, last_activity_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt =
                      conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setString(1, account.getName());
             stmt.setString(2, account.getPassword());
-            stmt.setString(3, account.getSecretQuestion());
+            stmt.setInt(3, account.getSecretQuestion());
             stmt.setString(4, account.getSecretAnswer());
             stmt.setString(5, account.getStatus().name());
             stmt.setString(6, account.getCreatedAt());

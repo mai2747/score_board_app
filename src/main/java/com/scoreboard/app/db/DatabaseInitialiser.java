@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -15,6 +16,13 @@ import java.util.stream.Collectors;
 
 public class DatabaseInitialiser {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseInitialiser.class);
+    private static final String[] SECURITY_QUESTIONS = {
+            "What is your family name?",
+            "What was the name of your first pet?",
+            "What city did your grandparents live in?",
+            "What was the first country your family travelled to?",
+            "What was the name of your primary school?"
+    };
 
     public static void initialise(Connection connection) {
         try {
@@ -34,10 +42,26 @@ public class DatabaseInitialiser {
                 migrateExistingDatabase(stmt);
             }
 
+            registerSecurityQuestions(connection);
+
             logger.info("Database initialisation completed");
 
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize database", e);
+        }
+    }
+
+    private static void registerSecurityQuestions(Connection connection) throws SQLException {
+        String sql = "INSERT OR IGNORE INTO security_questions (question_id, question_text) VALUES (?, ?)";
+
+        try (PreparedStatement stmt = connection.prepareStatement(sql)) {
+            for (int i = 0; i < SECURITY_QUESTIONS.length; i++) {
+                stmt.setInt(1, i + 1);
+                stmt.setString(2, SECURITY_QUESTIONS[i]);
+                stmt.addBatch();
+            }
+
+            stmt.executeBatch();
         }
     }
 

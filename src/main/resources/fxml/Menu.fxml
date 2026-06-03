@@ -20,5 +20,7 @@
             <Button mnemonicParsing="false" onAction="#logout" text="Logout" />
          </children>
       </VBox>
+      <Label layoutX="21.0" layoutY="23.0" text="Logged in as: " />
+      <Label fx:id="accountNameLabel" layoutX="95.0" layoutY="23.0" prefHeight="17.0" prefWidth="117.0" />
    </children>
 </AnchorPane>

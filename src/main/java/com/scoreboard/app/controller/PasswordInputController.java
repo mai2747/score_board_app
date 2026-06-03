@@ -36,7 +36,7 @@ public class PasswordInputController implements ContextAwareController{
 
         pendingAccount = context.getPendingAccount();
         accountNameLabel.setText("Login to " + pendingAccount.getName());
-
+        accountNameLabel.setMaxWidth(Double.MAX_VALUE);
     }
 
     @FXML
@@ -110,6 +110,11 @@ public class PasswordInputController implements ContextAwareController{
         throw new AuthenticationException(
                 "Password incorrect. " + (3 - failedAttempts) + " times attempts left"
         );
+    }
+
+    @FXML
+    public void resetPasswordTransition(){
+        ViewManager.switchTo("SecretQuestion.fxml");
     }
 
     public void backToList(){
