@@ -75,12 +75,11 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public void updateStatusByCurrentStatus(GameStatus from, GameStatus to) {
-        String sql = "UPDATE games SET status = ? WHERE status = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
+        String sql = "UPDATE games SET status = ? WHERE status = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, to.name());
             stmt.setString(2, from.name());
-            stmt.setLong(3, currentAccountId);
             stmt.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("Bulk update game status failed", e);
@@ -121,11 +120,10 @@ public class SqliteGameRepository implements GameRepository {
 
     @Override
     public void deleteByStatus(GameStatus status) {
-        String sql = "DELETE FROM games WHERE status = ? AND group_id IN (SELECT group_id FROM groups WHERE account_id = ?)";
+        String sql = "DELETE FROM games WHERE status = ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setString(1, status.name());
-            stmt.setLong(2, currentAccountId);
 
             stmt.executeUpdate();
 

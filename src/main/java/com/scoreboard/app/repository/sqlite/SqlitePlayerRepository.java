@@ -9,9 +9,22 @@ import java.util.*;
 
 public class SqlitePlayerRepository implements PlayerRepository {
     private final Connection conn;
+    private Long currentAccountId;
 
     public SqlitePlayerRepository(Connection conn) {
         this.conn = conn;
+    }
+
+    @Override
+    public void setCurrentAccountId(Long accountId) {
+        this.currentAccountId = accountId;
+    }
+
+    private long requireCurrentAccountId() {
+        if (currentAccountId == null) {
+            throw new IllegalStateException("No current account id");
+        }
+        return currentAccountId;
     }
 
     @Override
@@ -37,13 +50,15 @@ public class SqlitePlayerRepository implements PlayerRepository {
     }
 
     private long insert(Player player){
-        String sql = "INSERT INTO players (group_id, display_name) VALUES (?, ?)";
+        String sql = "INSERT INTO players (group_id, account_id, display_name) VALUES (?, ?, ?)";
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt =
                      conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setLong(1, player.getGroupId());
-            stmt.setString(2, player.getName());
+            stmt.setLong(2, accountId);
+            stmt.setString(3, player.getName());
 
             stmt.executeUpdate();
 
@@ -62,12 +77,14 @@ public class SqlitePlayerRepository implements PlayerRepository {
 
     @Override
     public void update(Player player) {
-        String sql = "UPDATE players SET display_name = ? WHERE player_id = ?";
+        String sql = "UPDATE players SET display_name = ? WHERE player_id = ? AND account_id = ?";
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             stmt.setString(1, player.getName());
             stmt.setLong(2, player.getId());
+            stmt.setLong(3, accountId);
 
             stmt.executeUpdate();
 
@@ -80,10 +97,12 @@ public class SqlitePlayerRepository implements PlayerRepository {
 
     @Override
     public Optional<Player> findByPlayerId(Long playerId) {
-        String sql = "SELECT player_id, group_id, display_name FROM players WHERE player_id = ?";
+        String sql = "SELECT player_id, group_id, display_name FROM players WHERE player_id = ? AND account_id = ?";
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, playerId);
+            stmt.setLong(2, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -102,12 +121,14 @@ public class SqlitePlayerRepository implements PlayerRepository {
 
     @Override
     public List<Player> findByGroupId(Long groupId){
-        String sql = "SELECT player_id, group_id, display_name FROM players WHERE group_id = ?";
+        String sql = "SELECT player_id, group_id, display_name FROM players WHERE group_id = ? AND account_id = ?";
+        long accountId = requireCurrentAccountId();
 
         List<Player> players = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1, groupId);
+            stmt.setLong(2, accountId);
 
              try (ResultSet rs = stmt.executeQuery()) {
 
@@ -132,11 +153,13 @@ public class SqlitePlayerRepository implements PlayerRepository {
 
     @Override
     public Optional<Player> findByGroupIdAndName(Long groupId, String name) {
-        String sql = "SELECT player_id, group_id, display_name FROM players WHERE group_id = ? AND display_name = ?";
+        String sql = "SELECT player_id, group_id, display_name FROM players WHERE group_id = ? AND display_name = ? AND account_id = ?";
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, groupId);
             stmt.setString(2, name);
+            stmt.setLong(3, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -167,6 +190,7 @@ public class SqlitePlayerRepository implements PlayerRepository {
                           ON g.game_id = pig.game_id
                         WHERE g.status = 'FINISHED'
                           AND g.group_id = ?
+                          AND pig.account_id = ?
                         GROUP BY pig.game_id, pig.player_id
                     ),
                     game_max_score AS (
@@ -210,14 +234,18 @@ public class SqlitePlayerRepository implements PlayerRepository {
                     LEFT JOIN player_stats ps
                       ON p.player_id = ps.player_id
                     WHERE p.group_id = ?
+                      AND p.account_id = ?
                     ORDER BY win_rate DESC, wins DESC, LOWER(p.display_name) ASC
                     """;
 
         Map<Long, PlayerWinRateDTO> resultMap = new HashMap<>();
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, groupId);
-            stmt.setLong(2, groupId);
+            stmt.setLong(2, accountId);
+            stmt.setLong(3, groupId);
+            stmt.setLong(4, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

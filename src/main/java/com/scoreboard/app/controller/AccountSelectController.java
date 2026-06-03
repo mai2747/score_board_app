@@ -71,6 +71,7 @@ public class AccountSelectController implements ContextAwareController {
         Account guestAccount = authService.createGuestAccount();
         context.login(guestAccount);
         context.setGuestMode(true);
+        ViewManager.switchTo("Menu.fxml");
     }
 
     @FXML

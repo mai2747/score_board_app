@@ -58,6 +58,14 @@ public final class AppContext {
         this.gameService = new GameService(scoreService, groupService, gameRepository, maintenanceService, gameQueryService, gamePlayService);
     }
 
+    private void setCurrentAccountIdForRepositories(Long currentAccountId) {
+        playerRepository.setCurrentAccountId(currentAccountId);
+        groupRepository.setCurrentAccountId(currentAccountId);
+        gameRepository.setCurrentAccountId(currentAccountId);
+        scoreRepository.setCurrentAccountId(currentAccountId);
+        pigRepository.setCurrentAccountId(currentAccountId);
+    }
+
     public Account requireAccount() {
         if (loggedInAccount == null) {
             throw new IllegalStateException("No logged-in account");
@@ -73,7 +81,7 @@ public final class AppContext {
         if (pendingAccount == null) {
             throw new IllegalStateException("No pending account to complete login");
         }
-        this.loggedInAccount = pendingAccount;
+        login(pendingAccount);
         clearPendingAccount();
     }
 
@@ -88,11 +96,16 @@ public final class AppContext {
 
     public void login(Account account) {
         this.loggedInAccount = account;
+
+        Long currentAccountId = requireAccountId();
+        setCurrentAccountIdForRepositories(currentAccountId);
+
         logger.info("--Logged in as {}--", account.getName());
     }
 
     public void logout() {
         logger.info("--{} has logged out--", requireAccount().getName());
+        setCurrentAccountIdForRepositories(null);
         this.loggedInAccount = null;
     }
 

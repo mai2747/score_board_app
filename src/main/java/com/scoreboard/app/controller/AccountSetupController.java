@@ -32,8 +32,8 @@ public class AccountSetupController implements ContextAwareController{
         try {
             Account account = validateInputs();
 
-            context.login(account);
             authService.createAccount(account);
+            context.login(account);
             ViewManager.switchTo("Menu.fxml");
 
         } catch (ValidationException e) {

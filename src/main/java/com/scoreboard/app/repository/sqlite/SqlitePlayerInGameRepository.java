@@ -11,9 +11,22 @@ import java.util.Optional;
 
 public class SqlitePlayerInGameRepository implements PlayerInGameRepository {
     private final Connection conn;
+    private Long currentAccountId;
 
     public SqlitePlayerInGameRepository(Connection conn){
         this.conn = conn;
+    }
+
+    @Override
+    public void setCurrentAccountId(Long accountId) {
+        this.currentAccountId = accountId;
+    }
+
+    private long requireCurrentAccountId() {
+        if (currentAccountId == null) {
+            throw new IllegalStateException("No current account id");
+        }
+        return currentAccountId;
     }
 
     @Override
@@ -33,11 +46,14 @@ public class SqlitePlayerInGameRepository implements PlayerInGameRepository {
         String sql = """
                     SELECT player_in_game_id, game_id, player_id, turn_order 
                     FROM players_in_game 
-                    WHERE player_in_game_id = ? 
+                    WHERE player_in_game_id = ?
+                      AND account_id = ?
                     """;
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1, playerInGameId);
+            stmt.setLong(2, accountId);
 
             try (ResultSet rs = stmt.executeQuery()){
 
@@ -58,12 +74,14 @@ public class SqlitePlayerInGameRepository implements PlayerInGameRepository {
     }
 
     private long insert(PlayerInGame pig){
-        String sql = "INSERT INTO players_in_game (game_id, player_id, turn_order) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO players_in_game (game_id, player_id, account_id, turn_order) VALUES (?, ?, ?, ?)";
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)){
             stmt.setLong(1, pig.getGameId());
             stmt.setLong(2, pig.getPlayerId());
-            stmt.setInt(3, pig.getTurnOrder());
+            stmt.setLong(3, accountId);
+            stmt.setInt(4, pig.getTurnOrder());
 
             stmt.executeUpdate();
 
@@ -84,14 +102,17 @@ public class SqlitePlayerInGameRepository implements PlayerInGameRepository {
         String sql = """
                     SELECT player_in_game_id, game_id, player_id, turn_order 
                     FROM players_in_game 
-                    WHERE game_id = ? 
+                    WHERE game_id = ?
+                      AND account_id = ?
                     ORDER BY turn_order ASC
                     """;
+        long accountId = requireCurrentAccountId();
 
         List<PlayerInGame> pigs = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
              stmt.setLong(1, gameId);
+             stmt.setLong(2, accountId);
 
              try (ResultSet rs = stmt.executeQuery()){
 
@@ -122,17 +143,21 @@ public class SqlitePlayerInGameRepository implements PlayerInGameRepository {
                     FROM players_in_game pig
                     JOIN players p
                       ON pig.player_id = p.player_id
+                     AND p.account_id = pig.account_id
                     LEFT JOIN scores s
                       ON s.player_in_game_id = pig.player_in_game_id
                     WHERE pig.game_id = ?
+                      AND pig.account_id = ?
                     GROUP BY pig.player_id, p.display_name, pig.player_in_game_id
                     ORDER BY total_score DESC, LOWER(p.display_name) ASC, pig.player_id ASC
                     """;
+        long accountId = requireCurrentAccountId();
 
         List<PlayerTotalScore> totals = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, gameId);
+            stmt.setLong(2, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 while (rs.next()) {

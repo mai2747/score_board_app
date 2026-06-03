@@ -21,14 +21,15 @@ is_temporary    INTEGER NOT NULL DEFAULT 0 CHECK (is_temporary IN (0, 1)),
 status          TEXT NOT NULL CHECK (status IN ('DRAFT', 'ACTIVE')),
 created_at      TEXT NOT NULL,
 last_played_at  TEXT,
-FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
-UNIQUE (account_id)
+FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS players (
 player_id      INTEGER PRIMARY KEY AUTOINCREMENT,
 group_id       INTEGER NOT NULL,
+account_id     INTEGER NOT NULL,
 display_name   TEXT NOT NULL,
+FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
 FOREIGN KEY (group_id) REFERENCES groups(group_id) ON DELETE CASCADE
 );
 
@@ -45,7 +46,9 @@ CREATE TABLE IF NOT EXISTS players_in_game (
 player_in_game_id  INTEGER PRIMARY KEY AUTOINCREMENT,
 game_id            INTEGER NOT NULL,
 player_id          INTEGER NOT NULL,
+account_id         INTEGER NOT NULL,
 turn_order         INTEGER NOT NULL,
+FOREIGN KEY (account_id) REFERENCES accounts(account_id) ON DELETE CASCADE,
 FOREIGN KEY (game_id) REFERENCES games(game_id) ON DELETE CASCADE,
 FOREIGN KEY (player_id) REFERENCES players(player_id) ON DELETE RESTRICT,
 UNIQUE (game_id, player_id),

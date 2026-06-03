@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,8 @@ public class DatabaseInitialiser {
                         stmt.execute(trimmed);
                     }
                 }
+
+                migrateExistingDatabase(stmt);
             }
 
             logger.info("Database initialisation completed");
@@ -35,6 +39,50 @@ public class DatabaseInitialiser {
         } catch (Exception e) {
             throw new RuntimeException("Failed to initialize database", e);
         }
+    }
+
+    private static void migrateExistingDatabase(Statement stmt) throws SQLException {
+        addAccountIdColumnIfMissing(stmt, "players", """
+                UPDATE players
+                SET account_id = (
+                    SELECT account_id
+                    FROM groups
+                    WHERE groups.group_id = players.group_id
+                )
+                WHERE account_id IS NULL
+                """);
+
+        addAccountIdColumnIfMissing(stmt, "players_in_game", """
+                UPDATE players_in_game
+                SET account_id = (
+                    SELECT g.account_id
+                    FROM games gm
+                    JOIN groups g
+                      ON g.group_id = gm.group_id
+                    WHERE gm.game_id = players_in_game.game_id
+                )
+                WHERE account_id IS NULL
+                """);
+    }
+
+    private static void addAccountIdColumnIfMissing(Statement stmt, String tableName, String backfillSql) throws SQLException {
+        if (!columnExists(stmt, tableName, "account_id")) {
+            stmt.execute("ALTER TABLE " + tableName + " ADD COLUMN account_id INTEGER REFERENCES accounts(account_id) ON DELETE CASCADE");
+        }
+
+        stmt.executeUpdate(backfillSql);
+    }
+
+    private static boolean columnExists(Statement stmt, String tableName, String columnName) throws SQLException {
+        try (ResultSet rs = stmt.executeQuery("PRAGMA table_info(" + tableName + ")")) {
+            while (rs.next()) {
+                if (columnName.equals(rs.getString("name"))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static String loadSchema() throws Exception {

@@ -126,11 +126,10 @@ public class SqliteGroupRepository implements GroupRepository {
     }
 
     public void deleteDraftGroupsOlderThan(String threshold) {
-        String sql = "DELETE FROM groups WHERE status = 'DRAFT' AND created_at < ? AND account_id = ?";
+        String sql = "DELETE FROM groups WHERE status = 'DRAFT' AND created_at < ?";
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, threshold);
-            stmt.setLong(2, currentAccountId);
 
             stmt.executeUpdate();
         } catch (SQLException e) {

@@ -15,9 +15,22 @@ public class SqliteScoreRepository implements ScoreRepository {
     private static final Logger logger = LoggerFactory.getLogger(SqliteScoreRepository.class);
 
     private final Connection conn;
+    private Long currentAccountId;
 
     public SqliteScoreRepository(Connection conn){
         this.conn = conn;
+    }
+
+    @Override
+    public void setCurrentAccountId(Long accountId) {
+        this.currentAccountId = accountId;
+    }
+
+    private long requireCurrentAccountId() {
+        if (currentAccountId == null) {
+            throw new IllegalStateException("No current account id");
+        }
+        return currentAccountId;
     }
 
     @Override
@@ -64,11 +77,22 @@ public class SqliteScoreRepository implements ScoreRepository {
 
     @Override
     public void update(Score score) {
-        String sql = "UPDATE scores SET score = ? WHERE score_id = ?";
+        String sql = """
+                    UPDATE scores
+                    SET score = ?
+                    WHERE score_id = ?
+                      AND player_in_game_id IN (
+                          SELECT player_in_game_id
+                          FROM players_in_game
+                          WHERE account_id = ?
+                      )
+                    """;
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setInt(1, score.getScore());
             stmt.setLong(2, score.getScoreId());
+            stmt.setLong(3, accountId);
 
             stmt.executeUpdate();
 
@@ -91,11 +115,14 @@ public class SqliteScoreRepository implements ScoreRepository {
                         SELECT player_in_game_id
                         FROM players_in_game
                         WHERE game_id = ?
+                          AND account_id = ?
                     )
                     """;
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1, gameId);
+            stmt.setLong(2, accountId);
 
             stmt.executeUpdate();
 
@@ -112,12 +139,15 @@ public class SqliteScoreRepository implements ScoreRepository {
                     JOIN players_in_game pig
                       ON s.player_in_game_id = pig.player_in_game_id
                     WHERE pig.game_id = ?
+                      AND pig.account_id = ?
                     ORDER BY s.turn_number DESC, s.score_id DESC
                     LIMIT 1
                     """;
+        long accountId = requireCurrentAccountId();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, gameId);
+            stmt.setLong(2, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -144,13 +174,16 @@ public class SqliteScoreRepository implements ScoreRepository {
                     JOIN players_in_game pig
                       ON s.player_in_game_id = pig.player_in_game_id
                     WHERE pig.game_id = ?
+                      AND pig.account_id = ?
                     ORDER BY s.turn_number ASC, pig.turn_order ASC
                     """;
+        long accountId = requireCurrentAccountId();
 
         List<Score> scores = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, gameId);
+            stmt.setLong(2, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
@@ -181,15 +214,19 @@ public class SqliteScoreRepository implements ScoreRepository {
                       ON s.player_in_game_id = pig.player_in_game_id
                     JOIN players p
                       ON pig.player_id = p.player_id
+                     AND p.account_id = pig.account_id
                     WHERE pig.game_id = ?
+                      AND pig.account_id = ?
                     GROUP BY pig.player_id, p.display_name
                     ORDER BY total_score DESC, LOWER(p.display_name) ASC, pig.player_id ASC
                     """;
+        long accountId = requireCurrentAccountId();
 
         List<PlayerTotalScore> totals = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)){
             stmt.setLong(1, gameId);
+            stmt.setLong(2, accountId);
 
             try (ResultSet rs = stmt.executeQuery()) {
 
