@@ -19,7 +19,6 @@ public class PasswordInputController implements ContextAwareController{
     private static final Logger logger = LoggerFactory.getLogger(PasswordInputController.class);
 
     AuthService authService;
-    private  AppContext context;
     @FXML private TextField passwordTextField;
     @FXML private Label infoLabel;
     @FXML private Label accountNameLabel;
@@ -32,9 +31,8 @@ public class PasswordInputController implements ContextAwareController{
     @Override
     public void setContext(AppContext context) {
         authService = context.authService();
-        this.context = context;
 
-        pendingAccount = context.getPendingAccount();
+        pendingAccount = authService.getPendingAccount();
         accountNameLabel.setText("Login to " + pendingAccount.getName());
         accountNameLabel.setMaxWidth(Double.MAX_VALUE);
     }
@@ -60,7 +58,7 @@ public class PasswordInputController implements ContextAwareController{
 
         if(authService.verifyPassword(pendingAccount.getAccountId(), passwordInput)){
             logger.info("Password matched. Logged in account ID: {}", pendingAccount.getAccountId());
-            context.completePendingLogin();
+            authService.completePendingLogin();
             ViewManager.switchTo("Menu.fxml");
         }else{
             logger.warn("Incorrect password");

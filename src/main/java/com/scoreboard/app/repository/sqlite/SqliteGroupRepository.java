@@ -2,6 +2,7 @@ package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.Group;
 import com.scoreboard.app.model.GroupStatus;
+import com.scoreboard.app.repository.AccountScopedRepository;
 import com.scoreboard.app.repository.GroupRepository;
 
 import java.sql.*;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SqliteGroupRepository implements GroupRepository {
+public class SqliteGroupRepository implements GroupRepository, AccountScopedRepository {
     private final Connection conn;
     private Long currentAccountId;
 

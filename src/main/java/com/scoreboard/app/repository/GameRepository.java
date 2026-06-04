@@ -6,7 +6,7 @@ import com.scoreboard.app.model.GameStatus;
 import java.util.List;
 import java.util.Optional;
 
-public interface GameRepository {
+public interface GameRepository extends AccountScopedRepository {
     void setCurrentAccountId(Long accountId);
     
     Game save(Game game);

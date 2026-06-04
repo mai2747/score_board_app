@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-public interface PlayerRepository {
+public interface PlayerRepository extends AccountScopedRepository {
     void setCurrentAccountId(Long accountId);
     
     long reserveId();

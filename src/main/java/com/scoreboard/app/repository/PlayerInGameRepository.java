@@ -6,7 +6,7 @@ import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import java.util.List;
 import java.util.Optional;
 
-public interface PlayerInGameRepository {
+public interface PlayerInGameRepository extends AccountScopedRepository {
     void setCurrentAccountId(Long accountId);
     
     PlayerInGame save(PlayerInGame pig);

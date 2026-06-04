@@ -3,7 +3,7 @@ package com.scoreboard.app.controller;
 import com.scoreboard.app.AppContext;
 import com.scoreboard.app.Exception.ValidationException;
 import com.scoreboard.app.model.Account;
-import com.scoreboard.app.model.SecurityQuestion;
+import com.scoreboard.app.model.SecQuestion;
 import com.scoreboard.app.service.AuthService;
 import com.scoreboard.app.validation.InputValidator;
 import com.scoreboard.app.view.ViewManager;
@@ -23,7 +23,7 @@ public class AccountSetupController implements ContextAwareController{
     @FXML private TextField passwordTextField;
     @FXML private TextField passwordConfirmationTextField;
     @FXML private Label errorLabel;
-    @FXML private ChoiceBox<SecurityQuestion> questionChoiceBox;
+    @FXML private ChoiceBox<SecQuestion> questionChoiceBox;
 
     @Override
     public void setContext(AppContext context) {
@@ -40,7 +40,7 @@ public class AccountSetupController implements ContextAwareController{
             Account account = validateInputs();
 
             authService.createAccount(account);
-            context.login(account);
+            authService.login(account);
             ViewManager.switchTo("Menu.fxml");
 
         } catch (ValidationException e) {
@@ -50,7 +50,7 @@ public class AccountSetupController implements ContextAwareController{
 
     // TODO: validate it, currently this method just create Account model
     private Account validateInputs() throws ValidationException {
-        SecurityQuestion selected = questionChoiceBox.getValue();
+        SecQuestion selected = questionChoiceBox.getValue();
 
         if (selected == null) {
             // 未選択エラー
@@ -90,9 +90,9 @@ public class AccountSetupController implements ContextAwareController{
     }
 
     private void loadQuestions() {
-        List<SecurityQuestion> questions = authService.getSecurityQuestions();
+        List<SecQuestion> questions = authService.getSecurityQuestions();
         questionChoiceBox.getItems().addAll(questions);
-        questionChoiceBox.getSelectionModel().selectFirst(); // 初期選択
+        questionChoiceBox.getSelectionModel().selectFirst();
     }
 
     private void showValidationError(String message) {

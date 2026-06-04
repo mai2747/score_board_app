@@ -1,6 +1,7 @@
 package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.Score;
+import com.scoreboard.app.repository.AccountScopedRepository;
 import com.scoreboard.app.repository.ScoreRepository;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
 import org.slf4j.Logger;
@@ -11,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SqliteScoreRepository implements ScoreRepository {
+public class SqliteScoreRepository implements ScoreRepository, AccountScopedRepository {
     private static final Logger logger = LoggerFactory.getLogger(SqliteScoreRepository.class);
 
     private final Connection conn;

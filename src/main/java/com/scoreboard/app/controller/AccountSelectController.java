@@ -11,7 +11,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 
 public class AccountSelectController implements ContextAwareController {
-    private AppContext context;
     private AuthService authService;
 
     @FXML private ListView<Account> accountListView;
@@ -20,7 +19,6 @@ public class AccountSelectController implements ContextAwareController {
 
     @Override
     public void setContext(AppContext context) {
-        this.context = context;
         this.authService = context.authService();
         putAccountList();
     }
@@ -61,7 +59,7 @@ public class AccountSelectController implements ContextAwareController {
 
         if (selected != null) {
             this.pendingAccount = selected;
-            context.setPendingAccount(selected);
+            authService.setPendingAccount(selected);
             ViewManager.switchTo("PasswordInput.fxml");
         }
     }
@@ -69,8 +67,8 @@ public class AccountSelectController implements ContextAwareController {
     @FXML
     public void loginAsGuest() {
         Account guestAccount = authService.createGuestAccount();
-        context.login(guestAccount);
-        context.setGuestMode(true);
+        authService.login(guestAccount);
+        authService.setGuestMode(true);
         ViewManager.switchTo("Menu.fxml");
     }
 

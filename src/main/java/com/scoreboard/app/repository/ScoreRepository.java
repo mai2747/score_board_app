@@ -9,7 +9,7 @@ import java.util.Optional;
 // Prepared an interface, considering the ease of switching between in-memory demos,
 // production environments using databases, and the potential future use of APIs
 
-public interface ScoreRepository {
+public interface ScoreRepository extends AccountScopedRepository {
     void setCurrentAccountId(Long accountId);
 
     void save(Score score); // INSERT

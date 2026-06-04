@@ -1,6 +1,7 @@
 package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.PlayerInGame;
+import com.scoreboard.app.repository.AccountScopedRepository;
 import com.scoreboard.app.repository.PlayerInGameRepository;
 import com.scoreboard.app.viewmodel.PlayerTotalScore;
 
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SqlitePlayerInGameRepository implements PlayerInGameRepository {
+public class SqlitePlayerInGameRepository implements PlayerInGameRepository, AccountScopedRepository {
     private final Connection conn;
     private Long currentAccountId;
 

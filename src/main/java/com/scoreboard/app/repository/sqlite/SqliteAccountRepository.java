@@ -33,6 +33,22 @@ public class SqliteAccountRepository implements AccountRepository {
         return account;
     }
 
+    @Override
+    public void updatePassword(Long accountId, String newPass) {
+        String sql = "UPDATE accounts SET password_hash = ? WHERE account_id = ?";
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, newPass);
+            stmt.setLong(2, accountId);
+
+            stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Update player failed", e);
+        }
+    }
+
     private Long insert(Account account) {
         String sql = "INSERT INTO accounts (account_name, password_hash, security_question_id, security_answer_hash, status, created_at, last_activity_at) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
@@ -122,6 +138,24 @@ public class SqliteAccountRepository implements AccountRepository {
             return null;
         }catch(SQLException e){
             throw new RuntimeException("Find password failed", e);
+        }
+    }
+
+    @Override
+    public String findSecurityAnsById(Long accountId) {
+        String sql = "SELECT security_answer_hash FROM accounts WHERE account_id = ?";
+
+        try(PreparedStatement stmt = conn.prepareStatement(sql)){
+            stmt.setLong(1, accountId);
+
+            try(ResultSet rs = stmt.executeQuery()){
+                if(rs.next()){
+                    return rs.getString(1);
+                }
+            }
+            return null;
+        }catch(SQLException e){
+            throw new RuntimeException("Find security answer failed", e);
         }
     }
 

@@ -2,6 +2,7 @@ package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.Game;
 import com.scoreboard.app.model.GameStatus;
+import com.scoreboard.app.repository.AccountScopedRepository;
 import com.scoreboard.app.repository.GameRepository;
 import com.scoreboard.app.util.DateTimeUtils;
 
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SqliteGameRepository implements GameRepository {
+public class SqliteGameRepository implements GameRepository, AccountScopedRepository {
     private final Connection conn;
     private Long currentAccountId;
 

@@ -1,10 +1,10 @@
 package com.scoreboard.app.model;
 
-public class SecurityQuestion {
+public class SecQuestion {
     private final int id;
     private final String text;
 
-    public SecurityQuestion(int id, String text) {
+    public SecQuestion(int id, String text) {
         this.id = id;
         this.text = text;
     }

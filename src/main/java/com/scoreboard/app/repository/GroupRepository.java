@@ -6,7 +6,7 @@ import com.scoreboard.app.model.GroupStatus;
 import java.util.List;
 import java.util.Optional;
 
-public interface GroupRepository {
+public interface GroupRepository extends AccountScopedRepository {
     void setCurrentAccountId(Long accountId);
     
     Group save(Group group);                    // insert or update

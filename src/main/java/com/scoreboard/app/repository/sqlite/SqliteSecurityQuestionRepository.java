@@ -1,6 +1,6 @@
 package com.scoreboard.app.repository.sqlite;
 
-import com.scoreboard.app.model.SecurityQuestion;
+import com.scoreboard.app.model.SecQuestion;
 import com.scoreboard.app.repository.SecurityQuestionRepository;
 
 import java.sql.Connection;
@@ -18,15 +18,15 @@ public class SqliteSecurityQuestionRepository implements SecurityQuestionReposit
         this.connection = connection;
     }
 
-    public List<SecurityQuestion> findAll() {
-        List<SecurityQuestion> list = new ArrayList<>();
+    public List<SecQuestion> findAll() {
+        List<SecQuestion> list = new ArrayList<>();
         String sql = "SELECT question_id, question_text FROM security_questions ORDER BY question_id";
 
         try (PreparedStatement stmt = connection.prepareStatement(sql);
              ResultSet rs = stmt.executeQuery()) {
 
             while (rs.next()) {
-                list.add(new SecurityQuestion(
+                list.add(new SecQuestion(
                         rs.getInt("question_id"),
                         rs.getString("question_text")
                 ));

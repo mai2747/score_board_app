@@ -1,13 +1,14 @@
 package com.scoreboard.app.repository.sqlite;
 
 import com.scoreboard.app.model.Player;
+import com.scoreboard.app.repository.AccountScopedRepository;
 import com.scoreboard.app.repository.PlayerRepository;
 import com.scoreboard.app.viewmodel.PlayerWinRateDTO;
 
 import java.sql.*;
 import java.util.*;
 
-public class SqlitePlayerRepository implements PlayerRepository {
+public class SqlitePlayerRepository implements PlayerRepository, AccountScopedRepository {
     private final Connection conn;
     private Long currentAccountId;
 

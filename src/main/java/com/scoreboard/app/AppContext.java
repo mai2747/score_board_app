@@ -13,6 +13,7 @@ import com.sun.tools.javac.Main;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
+import java.util.List;
 import java.util.logging.Logger;
 
 public final class AppContext {
@@ -34,12 +35,8 @@ public final class AppContext {
     private final GamePlayService gamePlayService;
     private final AuthService authService;
 
-
-    private Account loggedInAccount;
-    private Account pendingAccount;
     private Long groupId;
     private Long gameId;
-    private Boolean guestMode;
     private GamePlayContext gameContext;
 
     public AppContext(Connection conn) {
@@ -51,7 +48,15 @@ public final class AppContext {
         this.accountRepository = new SqliteAccountRepository(conn);
         this.securityQuestionRepository = new SqliteSecurityQuestionRepository(conn);
 
-        this.authService = new AuthService(accountRepository, securityQuestionRepository);
+        List<AccountScopedRepository> scopedRepositories = List.of(
+                scoreRepository,
+                playerRepository,
+                groupRepository,
+                gameRepository,
+                pigRepository
+        );
+
+        this.authService = new AuthService(accountRepository, securityQuestionRepository, scopedRepositories);
         this.scoreService = new ScoreService(scoreRepository);
         this.groupService = new GroupService(playerRepository, groupRepository, pigRepository);
         this.maintenanceService = new MaintenanceService(groupService, gameRepository);
@@ -60,56 +65,6 @@ public final class AppContext {
         this.gameService = new GameService(scoreService, groupService, gameRepository, maintenanceService, gameQueryService, gamePlayService);
     }
 
-    private void setCurrentAccountIdForRepositories(Long currentAccountId) {
-        playerRepository.setCurrentAccountId(currentAccountId);
-        groupRepository.setCurrentAccountId(currentAccountId);
-        gameRepository.setCurrentAccountId(currentAccountId);
-        scoreRepository.setCurrentAccountId(currentAccountId);
-        pigRepository.setCurrentAccountId(currentAccountId);
-    }
-
-    public Account requireAccount() {
-        if (loggedInAccount == null) {
-            throw new IllegalStateException("No logged-in account");
-        }
-        return loggedInAccount;
-    }
-
-    public Long requireAccountId() {
-        return requireAccount().getAccountId();
-    }
-
-    public void completePendingLogin() {
-        if (pendingAccount == null) {
-            throw new IllegalStateException("No pending account to complete login");
-        }
-        login(pendingAccount);
-        clearPendingAccount();
-    }
-
-    public void setPendingAccount(Account account){
-        pendingAccount = account;
-    }
-    public Account getPendingAccount(){ return pendingAccount;
-    }
-    public void clearPendingAccount() {
-        this.pendingAccount = null;
-    }
-
-    public void login(Account account) {
-        this.loggedInAccount = account;
-
-        Long currentAccountId = requireAccountId();
-        setCurrentAccountIdForRepositories(currentAccountId);
-
-        logger.info("--Logged in as {}--", account.getName());
-    }
-
-    public void logout() {
-        logger.info("--{} has logged out--", requireAccount().getName());
-        setCurrentAccountIdForRepositories(null);
-        this.loggedInAccount = null;
-    }
 
     public GameService gameService() { return gameService; }
     public ScoreService scoreService() { return scoreService; }
@@ -124,7 +79,4 @@ public final class AppContext {
 
     public void setGamePlayContext(GamePlayContext gameContext){ this.gameContext = gameContext; }
     public GamePlayContext getGameContext() { return gameContext; }
-
-    public void setGuestMode(boolean isGuest){ this.guestMode = isGuest; }
-    public boolean isGuestMode(){ return guestMode;}
 }

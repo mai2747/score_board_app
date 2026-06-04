@@ -28,14 +28,14 @@ public class MenuController implements ContextAwareController {
 
     boolean hasPausedGame;
     private GameService gameService;
-    private AppContext context;
+    private AuthService authService;
 
     @Override
     public void setContext(AppContext context) {
         gameService = context.gameService();
-        this.context = context;
+        authService = context.authService();
 
-        String accountName = context.requireAccount().getName();
+        String accountName = authService.requireAccount().getName();
         accountNameLabel.setText(accountName);
 
         refreshPausedGameState();
@@ -96,7 +96,7 @@ public class MenuController implements ContextAwareController {
             return;
         }
 
-        context.logout();
+        authService.logout();
         ViewManager.switchTo("AccountSelect.fxml");
     }
 }

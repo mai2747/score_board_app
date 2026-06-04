@@ -3,6 +3,7 @@ package com.scoreboard.app.controller;
 import com.scoreboard.app.App;
 import com.scoreboard.app.AppContext;
 import com.scoreboard.app.model.Group;
+import com.scoreboard.app.service.AuthService;
 import com.scoreboard.app.view.ViewManager;
 import javafx.fxml.FXML;
 import javafx.event.ActionEvent;
@@ -36,12 +37,14 @@ public class GroupSetupController implements ContextAwareController{
     @FXML private Label errorLabel;
 
     private GameService gameService;
+    private AuthService authService;
     private AppContext context;
 
     @Override
     public void setContext(AppContext context){
-        this.gameService = context.gameService();
-        this.context = context;
+        gameService = context.gameService();
+        authService = context.authService();
+        this.context = context; // TODO: fix codes not to require context in local field
     }
 
     // Further implementation: "Create Group" -> Edit settings -> "Start Game"
@@ -77,7 +80,7 @@ public class GroupSetupController implements ContextAwareController{
             logger.debug("Player {}: {}", i + 1, playerNames.get(i));
         }
 
-        Group group = gameService.createNewGroup(context.requireAccountId(), playerNames, groupName.getText(), isTemporary.isSelected());
+        Group group = gameService.createNewGroup(authService.requireAccountId(), playerNames, groupName.getText(), isTemporary.isSelected());
         context.setSelectedGroupId(group.getGroupId());
         ViewManager.switchTo("GameSetup.fxml");
     }
